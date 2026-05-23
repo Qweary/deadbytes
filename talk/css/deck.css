@@ -1,0 +1,1133 @@
+/* ====================================================================
+   DEAD BYTES TELL NO LIES — slide deck CSS
+   Terminal-green hardware aesthetic for lock/hardware-hacking talk.
+   ToorCamp 2026, Prime Dome. Speaker: Qweary.
+
+   Palette: deep dark green-black background, terminal-green primary,
+   amber secondary accent, red for danger/attack beats.
+   Structure: mirrors AI Village deck (small-unit-deep-impact) in
+   layout primitives, with distinct green palette throughout.
+   ==================================================================== */
+
+/* ---------- Fonts (local) ---------- */
+@font-face{
+  font-family:'Orbitron';
+  font-style:normal;
+  font-weight:400;
+  font-display:block;
+  src:url('../fonts/orbitron.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Orbitron';
+  font-style:normal;
+  font-weight:700;
+  font-display:block;
+  src:url('../fonts/orbitron.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Orbitron';
+  font-style:normal;
+  font-weight:900;
+  font-display:block;
+  src:url('../fonts/orbitron.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Share Tech Mono';
+  font-style:normal;
+  font-weight:400;
+  font-display:block;
+  src:url('../fonts/sharetechmono.woff2') format('woff2');
+}
+
+/* ---------- CSS vars: hardware-hacking green palette ---------- */
+:root{
+  /* background */
+  --bg:#020f08;           /* deep dark green-black */
+  --bp:#031208;           /* slightly lighter panel background */
+  --bi:#040f0a;           /* inner panel */
+
+  /* terminal green family — primary accent */
+  --g:#00e676;            /* terminal green */
+  --gd:#004d1a;           /* dark green */
+  --gm:#00c65a;           /* mid green */
+  --gl:rgba(0,230,118,.40);
+
+  /* amber — secondary accent for warnings / mitigations */
+  --amber:#f0a500;
+  --amberd:#b07800;
+  --amberm:#d08800;
+
+  /* red — danger / attack highlight */
+  --red:#ff3355;
+  --redm:#c02040;
+
+  /* text */
+  --w:#c8e6c9;            /* off-white / green-tinted */
+  --gr:#4a7a55;           /* muted green text */
+  --bdr:#0a2010;          /* border color */
+
+  /* glows */
+  --gg:0 0 10px rgba(0,230,118,.40);
+  --ga:0 0 10px rgba(240,165,0,.38);
+  --gr-r:0 0 10px rgba(255,51,85,.50);
+}
+
+/* ---------- reveal.js overrides ---------- */
+html, body{
+  background:var(--bg);
+}
+.reveal{
+  font-family:'Share Tech Mono','Courier New',monospace;
+  font-size:24px;
+  color:var(--w);
+  font-weight:400;
+}
+.reveal .slides{
+  text-align:left;
+}
+.reveal .slides section{
+  text-align:left;
+  padding:0;
+}
+.reveal h1,.reveal h2,.reveal h3,.reveal h4,.reveal h5,.reveal h6{
+  font-family:'Orbitron','Share Tech Mono',sans-serif;
+  text-transform:none;
+  letter-spacing:3px;
+  margin:0;
+  font-weight:900;
+  color:var(--g);
+}
+.reveal p{margin:0;color:var(--w);line-height:1.55}
+.reveal code,.reveal pre{
+  font-family:'Share Tech Mono',monospace;
+  color:var(--w);
+  background:transparent;
+  box-shadow:none;
+  white-space:pre;
+}
+.reveal pre{
+  display:block;
+  width:auto;
+  margin:0;
+  background:transparent;
+  font-size:.82em;
+  line-height:1.45;
+}
+
+/* Links */
+.reveal a{color:var(--amberm);text-decoration:none}
+.reveal a:hover{color:var(--amber);text-shadow:var(--ga)}
+
+/* Controls: muted green */
+.reveal .controls{color:var(--gd)}
+.reveal .controls .controls-arrow:before,.reveal .controls .controls-arrow:after{background:var(--gd)}
+
+/* Slide number — bottom-right, muted */
+.reveal .slide-number{
+  background:transparent;
+  color:#1e4a2a;
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;
+  letter-spacing:1px;
+  right:14px;
+  bottom:12px;
+}
+
+/* ---------- Scanline overlay (default ON) ---------- */
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:9999;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,.058) 3px,
+    rgba(0,0,0,.058) 4px
+  );
+}
+body.no-scanline::after{display:none}
+
+/* ---------- Slide layout primitives ---------- */
+.slide{
+  width:100%;
+  height:100%;
+  padding:64px 72px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  gap:24px;
+  position:relative;
+}
+.slide.center{justify-content:center;align-items:center}
+.slide.tight{padding:48px 64px;gap:18px}
+
+/* Section anchor tag — top-left console prompt */
+.anchor{
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;
+  letter-spacing:3px;
+  color:#1e4a2a;
+  position:absolute;
+  top:30px;
+  left:72px;
+}
+.anchor::before{content:'// '}
+
+/* Brand — bottom-left, very faint */
+.brand{
+  position:absolute;
+  bottom:18px;
+  left:72px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;
+  letter-spacing:2.5px;
+  color:#122a18;
+}
+
+/* ---------- Block cursor (blinking & static) ---------- */
+.cur{
+  display:inline-block;
+  width:.55em;
+  height:1em;
+  background:currentColor;
+  vertical-align:-0.12em;
+  margin-left:.22em;
+  box-shadow:0 0 8px currentColor;
+}
+.cur.blink{animation:blink .8s steps(1) infinite}
+@keyframes blink{0%,50%{opacity:1}50.01%,100%{opacity:0}}
+
+/* ---------- S1 — Title card ---------- */
+.s1 .title{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:82px;
+  letter-spacing:8px;
+  color:var(--g);
+  text-shadow:var(--gg);
+  line-height:1.05;
+  text-align:center;
+}
+.s1 .sub{
+  font-family:'Share Tech Mono',monospace;
+  font-size:26px;
+  letter-spacing:2px;
+  color:var(--gm);
+  text-shadow:0 0 8px rgba(0,198,90,.30);
+  margin-top:22px;
+  text-align:center;
+}
+.s1 .venue{
+  font-family:'Share Tech Mono',monospace;
+  font-size:13px;
+  letter-spacing:5px;
+  color:var(--gr);
+  margin-top:46px;
+  text-align:center;
+}
+
+/* ---------- S2 — Meta reveal beat ---------- */
+.s2-reveal{
+  display:flex;
+  flex-direction:column;
+  gap:38px;
+  max-width:1400px;
+  margin:auto;
+  width:100%;
+}
+.s2-reveal .pivot{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:54px;
+  letter-spacing:5px;
+  color:var(--g);
+  text-shadow:var(--gg);
+  line-height:1.15;
+}
+.s2-reveal .consequence{
+  font-family:'Share Tech Mono',monospace;
+  font-size:28px;
+  letter-spacing:1.5px;
+  color:var(--w);
+  line-height:1.6;
+}
+.s2-reveal .quote-box{
+  border:2px solid var(--amber);
+  background:rgba(240,165,0,.04);
+  padding:22px 30px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:30px;
+  letter-spacing:1.5px;
+  color:var(--amber);
+  text-shadow:var(--ga);
+  max-width:900px;
+}
+.s2-reveal .pivot-line{
+  font-family:'Share Tech Mono',monospace;
+  font-size:22px;
+  letter-spacing:2px;
+  color:var(--gr);
+  margin-top:14px;
+}
+
+/* ---------- S3 — Bio ---------- */
+.s3-bio{
+  display:flex;
+  flex-direction:column;
+  gap:28px;
+  max-width:900px;
+}
+.s3-bio .handle{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:64px;
+  letter-spacing:7px;
+  color:var(--g);
+  text-shadow:var(--gg);
+}
+.s3-bio .roles{
+  font-family:'Share Tech Mono',monospace;
+  font-size:26px;
+  letter-spacing:2px;
+  color:var(--w);
+}
+.s3-bio .first-talk{
+  font-family:'Share Tech Mono',monospace;
+  font-size:22px;
+  letter-spacing:2px;
+  color:var(--gm);
+}
+.s3-bio .repo-ref{
+  font-family:'Share Tech Mono',monospace;
+  font-size:16px;
+  letter-spacing:1.5px;
+  color:var(--gr);
+  margin-top:14px;
+  line-height:1.7;
+}
+
+/* ---------- Chapter dividers (S4, S8, S10, S12, S14) ---------- */
+.divider{padding:64px 72px}
+.divider .chapter-num{
+  font-family:'Share Tech Mono',monospace;
+  font-size:18px;
+  letter-spacing:5px;
+  color:var(--gr);
+  margin-bottom:8px;
+}
+.divider .chapter{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:104px;
+  letter-spacing:10px;
+  line-height:1.0;
+  color:var(--g);
+  text-shadow:var(--gg);
+  display:flex;
+  align-items:center;
+}
+.divider .rule{
+  font-family:'Share Tech Mono',monospace;
+  font-size:28px;
+  letter-spacing:4px;
+  margin-top:32px;
+  color:var(--gm);
+  text-shadow:0 0 8px rgba(0,198,90,.28);
+}
+.divider .sub{
+  font-family:'Share Tech Mono',monospace;
+  font-size:20px;
+  letter-spacing:2.5px;
+  color:var(--gr);
+  margin-top:24px;
+}
+
+/* S4 — Relationship chapter — slightly amber tint */
+.ch-relationship .chapter{color:var(--amber);text-shadow:var(--ga)}
+.ch-relationship .rule{color:var(--amberm)}
+
+/* S8, S10, S12, S14 — layer dividers — green */
+.ch-layer .chapter{color:var(--g);text-shadow:var(--gg)}
+
+/* ---------- S5 — ANE-003 quote beat ---------- */
+.s5-rel{
+  display:flex;
+  flex-direction:column;
+  gap:32px;
+  max-width:1300px;
+}
+.s5-rel .timeline{
+  font-family:'Share Tech Mono',monospace;
+  font-size:20px;
+  letter-spacing:1.5px;
+  color:var(--w);
+  line-height:1.9;
+}
+.s5-rel .timeline .tl-entry{display:block}
+.s5-rel .timeline .tl-entry::before{content:'> ';color:var(--gd)}
+.quote-amber{
+  border:2px solid var(--amber);
+  border-left-width:6px;
+  background:rgba(240,165,0,.04);
+  padding:22px 30px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:36px;
+  letter-spacing:1.5px;
+  color:var(--amber);
+  text-shadow:var(--ga);
+  max-width:900px;
+}
+.quote-amber .attrib{
+  display:block;
+  margin-top:10px;
+  font-size:13px;
+  letter-spacing:2.5px;
+  color:var(--amberd);
+}
+.s5-rel .followup{
+  font-family:'Share Tech Mono',monospace;
+  font-size:20px;
+  letter-spacing:2px;
+  color:var(--gr);
+}
+
+/* ---------- S6 — Anatomy ---------- */
+.s6-anatomy{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:48px;
+  align-items:start;
+  max-width:1400px;
+}
+.s6-anatomy .photo-placeholder{
+  border:2px dashed var(--gd);
+  background:rgba(0,77,26,.10);
+  height:420px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Share Tech Mono',monospace;
+  font-size:16px;
+  letter-spacing:2px;
+  color:var(--gd);
+}
+.s6-anatomy .components{
+  font-family:'Share Tech Mono',monospace;
+  font-size:22px;
+  letter-spacing:1.5px;
+  color:var(--w);
+  line-height:2.0;
+}
+.s6-anatomy .components .lbl{
+  color:var(--gr);
+  display:inline-block;
+  min-width:80px;
+}
+.s6-anatomy .callout{
+  font-family:'Share Tech Mono',monospace;
+  font-size:18px;
+  letter-spacing:1.5px;
+  color:var(--gm);
+  margin-top:32px;
+  padding-top:22px;
+  border-top:1px solid var(--bdr);
+}
+
+/* ---------- S7 — Five Layers overview ---------- */
+.s7-layers{
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  max-width:1200px;
+  border:1px solid var(--bdr);
+  background:var(--bp);
+}
+.layer-row{
+  display:flex;
+  align-items:center;
+  padding:20px 28px;
+  border-bottom:1px solid var(--bdr);
+  font-family:'Share Tech Mono',monospace;
+  gap:24px;
+}
+.layer-row:last-child{border-bottom:none}
+.layer-row .lnum{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:18px;
+  letter-spacing:3px;
+  color:var(--gd);
+  min-width:44px;
+  border:1px solid var(--gd);
+  text-align:center;
+  padding:4px 8px;
+}
+.layer-row .lname{
+  font-size:20px;
+  letter-spacing:3px;
+  color:var(--g);
+  min-width:240px;
+}
+.layer-row .ldesc{
+  font-size:17px;
+  letter-spacing:1.5px;
+  color:var(--gr);
+}
+
+/* ---------- S9 — Layer 1 content (service member story) ---------- */
+.s9-l1{
+  display:flex;
+  flex-direction:column;
+  gap:28px;
+  max-width:1400px;
+}
+.attack-list{
+  font-family:'Share Tech Mono',monospace;
+  font-size:18px;
+  letter-spacing:1.5px;
+  color:var(--w);
+  line-height:2.1;
+  border:1px solid var(--bdr);
+  background:var(--bp);
+  padding:22px 28px;
+}
+.attack-list .atk-num{color:var(--gm);margin-right:8px}
+.attack-list .atk-desc{color:var(--gr);margin-left:8px}
+.story-box{
+  border-left:5px solid var(--amber);
+  background:rgba(240,165,0,.03);
+  padding:18px 24px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:18px;
+  letter-spacing:1.5px;
+  color:var(--w);
+  line-height:1.9;
+  max-width:1200px;
+}
+.story-box .story-line{display:block}
+.story-box .story-line::before{content:'  ';white-space:pre}
+.story-box .story-label{
+  display:block;
+  font-size:13px;
+  letter-spacing:3px;
+  color:var(--amberd);
+  margin-bottom:10px;
+}
+.s9-l1 .conclusion{
+  font-family:'Share Tech Mono',monospace;
+  font-size:22px;
+  letter-spacing:2px;
+  color:var(--g);
+  text-shadow:var(--gg);
+}
+
+/* ---------- S11 — NAND page layout + stealth window ---------- */
+.s11-nand{
+  display:flex;
+  flex-direction:column;
+  gap:26px;
+  max-width:1400px;
+}
+.hex-block{
+  font-family:'Share Tech Mono',monospace;
+  font-size:20px;
+  letter-spacing:1.5px;
+  color:var(--g);
+  background:var(--bp);
+  border:1px solid var(--bdr);
+  padding:18px 24px;
+  line-height:1.6;
+  text-shadow:0 0 6px rgba(0,230,118,.18);
+}
+.hex-block .hex-annot{
+  color:var(--gr);
+  font-size:15px;
+  letter-spacing:1px;
+  display:block;
+  margin-top:6px;
+}
+.hex-block .hex-label{
+  display:block;
+  font-size:13px;
+  letter-spacing:2.5px;
+  color:var(--gd);
+  margin-bottom:10px;
+}
+.nand-two-col{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+}
+.callout-amber{
+  border:2px solid var(--amber);
+  border-left-width:5px;
+  background:rgba(240,165,0,.03);
+  padding:16px 22px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:17px;
+  letter-spacing:1.5px;
+  color:var(--w);
+  line-height:1.85;
+}
+.callout-amber .ca-line{display:block}
+.callout-amber .ca-label{
+  font-size:12px;
+  letter-spacing:2.5px;
+  color:var(--amberd);
+  display:block;
+  margin-bottom:8px;
+}
+.callout-red{
+  border:2px solid var(--red);
+  border-left-width:5px;
+  background:rgba(255,51,85,.03);
+  padding:16px 22px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:17px;
+  letter-spacing:1.5px;
+  color:var(--w);
+  line-height:1.85;
+}
+.callout-red .ca-line{display:block}
+.callout-red .ca-label{
+  font-size:12px;
+  letter-spacing:2.5px;
+  color:var(--redm);
+  display:block;
+  margin-bottom:8px;
+}
+.callout-red .v-print{color:var(--g)}
+.callout-red .v-export{color:var(--red)}
+.nand-closing{
+  font-family:'Share Tech Mono',monospace;
+  font-size:20px;
+  letter-spacing:2px;
+  color:var(--amber);
+  text-shadow:var(--ga);
+}
+
+/* ---------- S13 — Firmware / 38-byte payload demo ---------- */
+.s13-fw{
+  display:grid;
+  grid-template-columns:340px 1fr;
+  gap:36px;
+  height:calc(100% - 128px);
+  align-items:start;
+  max-width:1700px;
+}
+.jtag-box{
+  border:1px solid var(--bdr);
+  background:var(--bp);
+  padding:20px 22px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:16px;
+  letter-spacing:1.5px;
+  line-height:2.0;
+}
+.jtag-box .jb-header{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  font-size:12px;
+  letter-spacing:3px;
+  color:var(--gd);
+  margin-bottom:10px;
+  border-bottom:1px solid var(--bdr);
+  padding-bottom:6px;
+}
+.jtag-box .jb-lbl{color:var(--gr);display:inline-block;min-width:70px}
+.jtag-box .jb-val{color:var(--w)}
+.jtag-box .jb-val.warn{color:var(--red)}
+
+.fw-right{
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+.payload-block{
+  border:1px solid var(--gd);
+  background:var(--bp);
+  padding:20px 24px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:19px;
+  letter-spacing:1px;
+  color:var(--g);
+  text-shadow:0 0 6px rgba(0,230,118,.20);
+  line-height:1.65;
+  flex:1;
+}
+.payload-block .pb-header{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  font-size:12px;
+  letter-spacing:3px;
+  color:var(--gd);
+  margin-bottom:12px;
+  border-bottom:1px solid var(--bdr);
+  padding-bottom:6px;
+}
+.payload-block .comment{color:var(--gr);font-size:16px}
+.payload-block .op{color:var(--amber)}
+.payload-block .addr{color:var(--gm)}
+
+.outcome-list{
+  border:1px solid var(--bdr);
+  background:var(--bp);
+  padding:14px 22px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:16px;
+  letter-spacing:1.5px;
+  color:var(--w);
+  line-height:1.9;
+}
+.outcome-list .ol-line{display:block}
+.outcome-list .ol-line::before{content:'✓ ';color:var(--g)}
+.outcome-list .ol-line.warn::before{color:var(--red)}
+
+.demo-callout{
+  border:2px solid var(--g);
+  background:rgba(0,230,118,.05);
+  padding:18px 24px;
+  text-align:center;
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:24px;
+  letter-spacing:4px;
+  color:var(--g);
+  text-shadow:var(--gg);
+}
+.demo-callout .demo-sub{
+  display:block;
+  margin-top:8px;
+  font-family:'Share Tech Mono',monospace;
+  font-weight:400;
+  font-size:16px;
+  letter-spacing:2px;
+  color:var(--gm);
+  text-shadow:none;
+}
+
+.fw-punchline{
+  font-family:'Share Tech Mono',monospace;
+  font-size:18px;
+  letter-spacing:1.5px;
+  color:var(--gr);
+  line-height:1.7;
+}
+
+/* ---------- S15 — Descriptor trust ---------- */
+.s15-cable{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:32px;
+  max-width:1400px;
+  align-items:start;
+}
+.cable-box{
+  border:1px solid var(--bdr);
+  background:var(--bp);
+  padding:22px 26px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:18px;
+  letter-spacing:1.5px;
+  color:var(--w);
+  line-height:2.1;
+}
+.cable-box .cb-header{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  font-size:11px;
+  letter-spacing:3px;
+  color:var(--gd);
+  border-bottom:1px solid var(--bdr);
+  padding-bottom:6px;
+  margin-bottom:12px;
+}
+.cable-box .cb-lbl{color:var(--gr);display:inline-block;min-width:130px}
+.cable-box .cb-val{color:var(--w)}
+.cable-box .cb-val.pass{color:var(--g);text-shadow:0 0 5px rgba(0,230,118,.3)}
+.cable-box .cb-val.warn{color:var(--amber)}
+.cable-box .cb-val.fail{color:var(--red)}
+.cable-box .cb-trust{
+  margin-top:14px;
+  padding-top:10px;
+  border-top:1px solid var(--bdr);
+  font-size:22px;
+  letter-spacing:2px;
+  color:var(--g);
+  text-shadow:var(--gg);
+}
+.cable-quote{
+  margin-top:10px;
+  padding-left:14px;
+  border-left:4px solid var(--amber);
+  font-family:'Share Tech Mono',monospace;
+  font-size:18px;
+  letter-spacing:1.5px;
+  color:var(--w);
+  line-height:1.9;
+}
+.s15-footer{
+  font-family:'Share Tech Mono',monospace;
+  font-size:20px;
+  letter-spacing:2px;
+  color:var(--amber);
+  text-shadow:var(--ga);
+}
+
+/* ---------- S16 — Synthesis chain ---------- */
+.s16-chain{
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  max-width:1400px;
+}
+.chain-row{
+  display:flex;
+  align-items:stretch;
+  min-height:88px;
+}
+.chain-connector{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:36px;
+  flex-shrink:0;
+}
+.chain-connector .cc-top{flex:1;width:2px;background:var(--gd)}
+.chain-connector .cc-dot{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:var(--g);
+  box-shadow:var(--gg);
+  flex-shrink:0;
+  z-index:1;
+}
+.chain-connector .cc-bot{flex:1;width:2px;background:var(--gd)}
+.chain-content{
+  flex:1;
+  border:1px solid var(--bdr);
+  background:var(--bp);
+  padding:14px 22px;
+  margin-left:14px;
+  margin-bottom:4px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:18px;
+  letter-spacing:1.5px;
+  color:var(--w);
+  line-height:1.7;
+}
+.chain-content .cl{color:var(--g);display:inline-block;min-width:160px;font-size:14px;letter-spacing:3px}
+.chain-end{
+  border:2px solid var(--g);
+  background:rgba(0,230,118,.04);
+  padding:18px 26px;
+  margin-top:14px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:18px;
+  letter-spacing:1.5px;
+  color:var(--g);
+  line-height:1.9;
+  text-shadow:0 0 6px rgba(0,230,118,.18);
+  max-width:1400px;
+}
+.chain-end .supply-note{
+  display:block;
+  margin-top:12px;
+  font-size:15px;
+  letter-spacing:1.5px;
+  color:var(--gr);
+  text-shadow:none;
+}
+
+/* ---------- S17 — Systemic problem ---------- */
+.s17-systemic{
+  display:flex;
+  flex-direction:column;
+  gap:32px;
+  max-width:1300px;
+  margin:auto;
+  width:100%;
+}
+.systemic-decl{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:52px;
+  letter-spacing:5px;
+  color:var(--g);
+  text-shadow:var(--gg);
+  line-height:1.2;
+  text-align:center;
+}
+.systemic-rule{
+  width:100%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--gd),transparent);
+}
+.systemic-verdict{
+  font-family:'Share Tech Mono',monospace;
+  font-size:32px;
+  letter-spacing:2px;
+  color:var(--w);
+  text-align:center;
+  line-height:1.5;
+}
+.systemic-sub{
+  font-family:'Share Tech Mono',monospace;
+  font-size:19px;
+  letter-spacing:2px;
+  color:var(--gr);
+  text-align:center;
+  line-height:1.9;
+}
+
+/* ---------- S18 — Observer System Model ---------- */
+.s18-osm{
+  display:flex;
+  flex-direction:column;
+  gap:28px;
+  max-width:1300px;
+  margin:auto;
+  width:100%;
+}
+.osm-diagram{
+  border:1px solid var(--bdr);
+  background:var(--bp);
+  padding:26px 32px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:17px;
+  letter-spacing:1.5px;
+  color:var(--w);
+  line-height:2.1;
+}
+.osm-diagram .osd-line{display:block}
+.osm-diagram .osd-sensor{color:var(--gm)}
+.osm-diagram .osd-arrow{color:var(--gd)}
+.osm-diagram .osd-node{color:var(--g);text-shadow:0 0 6px rgba(0,230,118,.3)}
+.osm-check{
+  font-family:'Share Tech Mono',monospace;
+  font-size:20px;
+  letter-spacing:2px;
+  color:var(--w);
+  line-height:1.9;
+}
+.osm-check .ck-line{display:block}
+.osm-check .ck-q{color:var(--amber)}
+.osm-check .ck-r{color:var(--red)}
+.osm-callout{
+  font-family:'Share Tech Mono',monospace;
+  font-size:18px;
+  letter-spacing:2px;
+  color:var(--gr);
+}
+
+/* ---------- S19 — $5 Fix ---------- */
+.s19-fix{
+  display:flex;
+  flex-direction:column;
+  gap:28px;
+  max-width:1400px;
+}
+.fix-table{
+  border:1px solid var(--bdr);
+  background:var(--bp);
+  font-family:'Share Tech Mono',monospace;
+}
+.fix-table .ft-header{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  padding:10px 24px;
+  background:rgba(0,230,118,.03);
+  border-bottom:1px solid var(--bdr);
+  font-size:12px;
+  letter-spacing:3px;
+  color:var(--gd);
+}
+.fix-table .ft-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  padding:18px 24px;
+  border-bottom:1px solid var(--bdr);
+  font-size:19px;
+  letter-spacing:1.5px;
+  align-items:center;
+}
+.fix-table .ft-row:last-child{border-bottom:none}
+.fix-table .ft-row .ft-mit{color:var(--w)}
+.fix-table .ft-row .ft-mit .ft-action{color:var(--g);display:inline-block;min-width:240px}
+.fix-table .ft-row .ft-result{
+  color:var(--gr);
+  font-size:16px;
+  letter-spacing:1.5px;
+}
+.fix-table .ft-row .ft-result .killed{color:var(--redm)}
+.s19-cost{
+  font-family:'Share Tech Mono',monospace;
+  font-size:24px;
+  letter-spacing:2px;
+  color:var(--g);
+  text-shadow:var(--gg);
+}
+.s19-note{
+  font-family:'Share Tech Mono',monospace;
+  font-size:17px;
+  letter-spacing:1.5px;
+  color:var(--gr);
+  line-height:1.7;
+}
+.s19-note .amber{color:var(--amber)}
+
+/* ---------- S20 — Close ---------- */
+.s20-close{
+  display:flex;
+  flex-direction:column;
+  gap:36px;
+  max-width:1200px;
+}
+.close-resources{
+  border:1px solid var(--bdr);
+  background:var(--bp);
+  padding:22px 28px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:17px;
+  letter-spacing:1.5px;
+  color:var(--gr);
+  line-height:2.0;
+}
+.close-resources .cr-url{
+  color:var(--gm);
+  font-size:22px;
+  letter-spacing:2px;
+  display:block;
+  margin-bottom:8px;
+}
+.close-resources .cr-line{display:block}
+.close-rule{
+  width:100%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--gd),transparent);
+}
+.close-lines{
+  font-family:'Share Tech Mono',monospace;
+  font-size:26px;
+  letter-spacing:2px;
+  color:var(--w);
+  line-height:1.8;
+}
+.close-punchline{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:54px;
+  letter-spacing:5px;
+  color:var(--g);
+  text-shadow:var(--gg);
+  margin-top:14px;
+}
+.close-handle{
+  font-family:'Share Tech Mono',monospace;
+  font-size:16px;
+  letter-spacing:2.5px;
+  color:var(--gr);
+}
+
+/* ---------- Back-pocket slide ---------- */
+.bp-nand{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:32px;
+  max-width:1600px;
+  align-items:start;
+}
+.bp-col{
+  border:1px solid var(--bdr);
+  background:var(--bp);
+  padding:20px 26px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:16px;
+  letter-spacing:1.5px;
+  color:var(--w);
+  line-height:1.9;
+}
+.bp-col .bpc-header{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  font-size:13px;
+  letter-spacing:3px;
+  color:var(--gd);
+  border-bottom:1px solid var(--bdr);
+  padding-bottom:8px;
+  margin-bottom:12px;
+}
+.bp-col .bpc-line{display:block}
+.bp-col .bpc-line::before{content:'  • ';color:var(--gm)}
+.bp-footer{
+  font-family:'Share Tech Mono',monospace;
+  font-size:18px;
+  letter-spacing:2px;
+  color:var(--gr);
+}
+
+/* ---------- Operator HUD ---------- */
+#hud{
+  position:fixed;
+  top:14px;
+  right:14px;
+  z-index:10000;
+  display:flex;
+  gap:8px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;
+  letter-spacing:1.5px;
+  color:#1e4a2a;
+  pointer-events:none;
+  opacity:.0;
+  transition:opacity .15s;
+}
+#hud.show{opacity:1}
+#hud .hk{
+  padding:3px 8px;
+  border:1px solid #1e4a2a;
+  background:rgba(0,0,0,.5);
+}
+#hud .hk b{color:var(--gm);font-weight:400}
+
+/* Goto chord prompt */
+#goto{
+  position:fixed;
+  bottom:24px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:10001;
+  padding:10px 18px;
+  background:#020f08;
+  border:1px solid var(--gm);
+  color:var(--gm);
+  font-family:'Share Tech Mono',monospace;
+  font-size:14px;
+  letter-spacing:2px;
+  display:none;
+  box-shadow:var(--gg);
+}
+#goto.show{display:block}
+#goto input{
+  background:transparent;
+  border:none;
+  outline:none;
+  color:var(--g);
+  font-family:inherit;
+  font-size:inherit;
+  letter-spacing:inherit;
+  width:140px;
+  margin-left:6px;
+}
+
+/* ---------- Reveal transitions (instant cut) ---------- */
+.reveal .slides>section.future,.reveal .slides>section.past{opacity:0}
+.reveal .slides>section.present{opacity:1}
+
+/* ---------- Fallbacks ---------- */
+.reveal .slides section.has-light-background{background:transparent}
+.reveal .slide-background{background:var(--bg)}

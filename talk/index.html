@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dead Bytes Tell No Lies — ToorCamp 2026</title>
+
+<!--
+  Slide deck for "Dead Bytes Tell No Lies: Hands-On NAND Flash Decoding
+  for Access Control Locks" — ToorCamp 2026, Prime Dome.
+  Speaker: Qweary.
+
+  Built from SLIDE-CONTENT.md (T+2 deliverable).
+  Mirrors AI Village deck structure (small-unit-deep-impact) with a
+  distinct terminal-green hardware-hacking palette.
+
+  Asset paths (relative to this file):
+    css/deck.css
+    fonts/orbitron.woff2
+    fonts/sharetechmono.woff2
+    lib/reveal.js/dist/reset.css
+    lib/reveal.js/dist/reveal.css
+    lib/reveal.js/dist/reveal.js
+
+  Operator key chords:
+    h = toggle HUD (keybinding cheat sheet)
+    n = toggle scanline overlay
+    f = fullscreen
+    g = goto (type slide id, Enter)
+
+  Back-pocket slide: id="nand-wedge"
+  Access via 'g' chord → type "nand-wedge" → Enter.
+  Forward-arrow from S20 (s20-close) is locked — does NOT advance
+  into back-pocket.
+
+  Verbatim-locked phrases (DO NOT paraphrase):
+    S20: "— maybe you should be."
+-->
+
+<link rel="stylesheet" href="lib/reveal.js/dist/reset.css">
+<link rel="stylesheet" href="lib/reveal.js/dist/reveal.css">
+<link rel="stylesheet" href="css/deck.css">
+</head>
+<body>
+
+<!-- Operator HUD: shows on 'h' keypress -->
+<div id="hud">
+  <span class="hk"><b>g</b>=goto</span>
+  <span class="hk"><b>n</b>=scanline</span>
+  <span class="hk"><b>h</b>=help</span>
+  <span class="hk"><b>f</b>=fullscreen</span>
+</div>
+
+<!-- Goto chord -->
+<div id="goto">goto: <input id="goto-input" type="text" placeholder="nand-wedge"></div>
+
+<div class="reveal">
+<div class="slides">
+
+<!-- ===================================================================
+     S1 — Title card
+     HOOK · 0:00–0:45
+     Hold lock up. Say nothing for 5 seconds. Then: "This is an Alarm
+     Lock T2/T3. It's in pharmacies. Government buildings. Banks.
+     Military installations."
+     =================================================================== -->
+<section id="s1-title" data-slide="S1">
+  <div class="slide s1 center">
+    <div class="anchor">HOOK</div>
+    <div>
+      <div class="title">DEAD BYTES<br>TELL NO LIES</div>
+      <div class="sub">Hands-On NAND Flash Decoding for Access Control Locks</div>
+      <div class="venue">TOORCAMP 2026 &middot; PRIME DOME</div>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S2 — Meta reveal beat (ANE-001)
+     HOOK · 0:45–4:00
+     The reversal: operator is the one who spread the lock.
+     Company response is the pivot. Visual: three-beat structure.
+     =================================================================== -->
+<section id="s2-reveal" data-slide="S2">
+  <div class="slide tight">
+    <div class="anchor">HOOK &middot; ANE-001</div>
+    <div class="s2-reveal">
+      <div class="pivot">"I put them there."</div>
+      <div class="consequence">
+        Other locksmiths asked what lock the base was running.<br>
+        I said: this one. Fast disclosure response. Military-grade.<br>
+        Word spread. The company leaned into it.
+      </div>
+      <div class="quote-box">
+        "They said: We don't want to talk to you anymore."
+      </div>
+      <div class="pivot-line">So I spent a year figuring out how to hack them. This is that talk.</div>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S3 — Who I Am (minimal bio)
+     WHO I AM · 4:00–7:00
+     Say it plainly. Don't apologize for "first talk."
+     =================================================================== -->
+<section id="s3-bio" data-slide="S3">
+  <div class="slide">
+    <div class="anchor">WHO I AM</div>
+    <div class="s3-bio">
+      <div class="handle">qweary</div>
+      <div class="roles">locksmith &middot; red team hobbyist</div>
+      <div class="first-talk">first conference talk.</div>
+      <div class="repo-ref">
+        github.com/qweary/dead-bytes<br>
+        33pp handwritten notes &middot; 5-part blog (Jul&ndash;Aug 2025) &middot; all the code
+      </div>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S4 — The Relationship That Broke (chapter divider)
+     RELATIONSHIP · 7:00–8:00
+     Emotional chapter open. Let the title breathe.
+     =================================================================== -->
+<section id="s4-relationship" data-slide="S4">
+  <div class="slide divider ch-relationship">
+    <div class="anchor">THE RELATIONSHIP THAT BROKE</div>
+    <div class="chapter">DISCLOSURE<span class="cur blink"></span></div>
+    <div class="rule">&mdash;&mdash;&mdash; the relationship that broke &mdash;&mdash;&mdash;</div>
+    <div class="sub">they responded. then they didn't. then I had a really bad idea.</div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S5 — "We're not worried about it." (ANE-003)
+     RELATIONSHIP · 8:00–12:00
+     Quote box is the emotional anchor. Pause after it.
+     "third-party relays" — no role description per locked flag.
+     =================================================================== -->
+<section id="s5-quote" data-slide="S5">
+  <div class="slide tight">
+    <div class="anchor">THE RELATIONSHIP THAT BROKE &middot; ANE-003</div>
+    <div class="s5-rel">
+      <div class="timeline">
+        <span class="tl-entry">Early installs &rarr; physical disclosures &rarr; company responds. That's the good version.</span>
+        <span class="tl-entry">Other locksmiths asked. I recommended it. Lock showed up everywhere.</span>
+        <span class="tl-entry">"trusted by military" &mdash; partly because of me.</span>
+        <span class="tl-entry">Then I asked about the firmware. User codes. What's on the chip.</span>
+      </div>
+      <div class="quote-amber">
+        "we're not worried about it"
+        <span class="attrib">— third-party relays &middot; subsequent disclosures: unacknowledged</span>
+      </div>
+      <div class="followup">
+        The lock I recommended was in critical infrastructure.<br>
+        The company wouldn't talk to me.<br>
+        And I had a year of locksmith context and a really bad idea.
+      </div>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S6 — What This Lock Is (anatomy)
+     WHAT THIS LOCK IS · 12:00–15:00
+     Scaffold for the five layers. Audit trail = load-bearing detail.
+     =================================================================== -->
+<section id="s6-anatomy" data-slide="S6">
+  <div class="slide tight">
+    <div class="anchor">WHAT THIS LOCK IS</div>
+    <div class="s6-anatomy">
+      <div class="photo-placeholder">[ T2/T3 photo ]</div>
+      <div>
+        <div class="components">
+          <span class="lbl">MCU:</span> MSP430F2418<br>
+          <span class="lbl">NAND:</span> Adesto AT45DB041E<br>
+          <span class="lbl">JTAG:</span> exposed &mdash; fuse never blown<br>
+          <span class="lbl">USB:</span> CP2102 audit cable (DL-Windows)
+        </div>
+        <div class="callout">
+          audit trail = legal evidence in some deployments.<br>
+          this becomes important later.
+        </div>
+      </div>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S7 — Five Layers (signpost card)
+     WHAT THIS LOCK IS · 14:30–15:00
+     Brief dwell. Signpost only — don't explain each layer yet.
+     =================================================================== -->
+<section id="s7-layers" data-slide="S7">
+  <div class="slide">
+    <div class="anchor">WHAT THIS LOCK IS &middot; attack surface</div>
+    <div class="s7-layers">
+      <div class="layer-row">
+        <div class="lnum">1</div>
+        <div class="lname">PHYSICAL</div>
+        <div class="ldesc">no audit events, no trace</div>
+      </div>
+      <div class="layer-row">
+        <div class="lnum">2</div>
+        <div class="lname">NAND FLASH</div>
+        <div class="ldesc">plaintext codes, stealth window</div>
+      </div>
+      <div class="layer-row">
+        <div class="lnum">3</div>
+        <div class="lname">FIRMWARE</div>
+        <div class="ldesc">JTAG open, 38-byte payload</div>
+      </div>
+      <div class="layer-row">
+        <div class="lnum">4</div>
+        <div class="lname">USB CABLE</div>
+        <div class="ldesc">descriptor trust, fake cable</div>
+      </div>
+      <div class="layer-row">
+        <div class="lnum">5</div>
+        <div class="lname">SYNTHESIS</div>
+        <div class="ldesc">combined chain</div>
+      </div>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S8 — LAYER 1: PHYSICAL (chapter divider)
+     LAYER 1 · 15:00–15:30
+     "starts with the door." Let it sit.
+     =================================================================== -->
+<section id="s8-l1-divider" data-slide="S8">
+  <div class="slide divider ch-layer">
+    <div class="anchor">LAYER 1</div>
+    <div class="chapter-num">LAYER 1</div>
+    <div class="chapter">PHYSICAL<span class="cur blink"></span></div>
+    <div class="rule">&mdash;&mdash;&mdash; four attacks &middot; no audit events &mdash;&mdash;&mdash;</div>
+    <div class="sub">starts with the door.</div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S9 — Four Attacks, No Trace (ANE-002 service member story)
+     LAYER 1 · 15:30–21:00
+     Attack list first. Then the story box. Pause after the wire story.
+     "a different locksmith" — unnamed, unidentifiable per locked flag.
+     =================================================================== -->
+<section id="s9-l1-content" data-slide="S9">
+  <div class="slide tight">
+    <div class="anchor">LAYER 1 &middot; ANE-002</div>
+    <div class="s9-l1">
+      <div class="attack-list">
+        <span><span class="atk-num">1.</span> acoustic keylogging <span class="atk-desc">&mdash; speaker voltage, scope, no contact</span></span><br>
+        <span><span class="atk-num">2.</span> tailpiece deflection <span class="atk-desc">&mdash; stiff wire, locksmith geometry</span></span><br>
+        <span><span class="atk-num">3.</span> factory reset via cold <span class="atk-desc">&mdash; inverted can, voltage drop, no trace</span></span><br>
+        <span><span class="atk-num">4.</span> remote release bridging <span class="atk-desc">&mdash; [ story ]</span></span>
+      </div>
+      <div class="story-box">
+        <span class="story-label">// ANE-002 · service member story</span>
+        <span class="story-line">service member: "I punch the door and it opens."</span>
+        <span class="story-line">a different locksmith cut the remote release wires short. capped inside the metal frame.</span>
+        <span class="story-line">jostling on impact &rarr; intermittent contact &rarr; lock reads it as a remote release signal.</span>
+        <span class="story-line">extrapolated: drill bit through comm port. bridge the wires. door opens.</span>
+        <span class="story-line">reported. company: fixing it adds too much friction for customers.</span>
+      </div>
+      <div class="conclusion">four attacks. zero audit events. I hadn't touched the firmware yet.</div>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S10 — LAYER 2: NAND FLASH (chapter divider)
+     LAYER 2 · 21:00–21:30
+     =================================================================== -->
+<section id="s10-l2-divider" data-slide="S10">
+  <div class="slide divider ch-layer">
+    <div class="anchor">LAYER 2</div>
+    <div class="chapter-num">LAYER 2</div>
+    <div class="chapter">NAND FLASH<span class="cur blink"></span></div>
+    <div class="rule">&mdash;&mdash;&mdash; Adesto AT45DB041E &mdash;&mdash;&mdash;</div>
+    <div class="sub">264-byte pages &middot; 50 users &middot; plaintext codes</div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S11 — Page Layout + Stealth Window
+     LAYER 2 · 21:30–28:00
+     Hex dump is the centerpiece. Two callout boxes beneath.
+     Print≠Export is the forensic evasion reveal.
+     =================================================================== -->
+<section id="s11-nand" data-slide="S11">
+  <div class="slide tight">
+    <div class="anchor">LAYER 2 &middot; page layout &middot; stealth window</div>
+    <div class="s11-nand">
+      <div class="hex-block">
+        <span class="hex-label">// AT45DB041E · page 0 · first user slot (hex dump)</span>
+        00 00 00 00  <span style="color:#00e676">42</span> 31 32 33 34  00  <span style="color:#f0a500">46 31</span>  00 00 00 00 ...
+        <span class="hex-annot">             ^ "0"&rarr;"B"  code ASCII nibbles  ^ F1=Master permission flag</span>
+        <span class="hex-annot">
+"0" stored as "B" &mdash; TI MSP430 assembly conflict, MCU representation bleeds into storage
+permission flags:  F1 = Master &nbsp; E1 = Elevated &nbsp; C1 = Supervisor</span>
+      </div>
+      <div class="nand-two-col">
+        <div class="callout-amber">
+          <span class="ca-label">// lazy write &middot; attack window</span>
+          <span class="ca-line">MSP430 commits RAM &rarr; NAND only on battery removal.</span>
+          <span class="ca-line">read chip &middot; edit codes &middot; write &middot; reinstall.</span>
+          <span class="ca-line">$30 programmer + SOP8 clip &middot; 15 min</span>
+          <span class="ca-line">result: new master user in a pharmacy lock.</span>
+        </div>
+        <div class="callout-red">
+          <span class="ca-label">// stealth window &middot; forensic evasion</span>
+          <span class="ca-line">PRINT USERS &nbsp;&nbsp;: <span class="v-print">injected code visible</span></span>
+          <span class="ca-line">EXPORT USERS : <span class="v-export">injected code absent</span></span>
+          <span class="ca-line">&nbsp;</span>
+          <span class="ca-line">investigators pull the export file.</span>
+          <span class="ca-line">they don't see your user.</span>
+        </div>
+      </div>
+      <div class="nand-closing">forensic evasion window. Print &ne; Export.</div>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S12 — LAYER 3: FIRMWARE (chapter divider)
+     LAYER 3 · 28:00–28:30
+     The self-deprecating beat is load-bearing here.
+     =================================================================== -->
+<section id="s12-l3-divider" data-slide="S12">
+  <div class="slide divider ch-layer">
+    <div class="anchor">LAYER 3</div>
+    <div class="chapter-num">LAYER 3</div>
+    <div class="chapter">FIRMWARE<span class="cur blink"></span></div>
+    <div class="rule">&mdash;&mdash;&mdash; JTAG fuse: never blown &mdash;&mdash;&mdash;</div>
+    <div class="sub">$30 programmer &middot; soldering iron &middot; unreasonable stubbornness</div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S13 — 38-Byte Payload [DEMO] (ANE-005)
+     LAYER 3 · 28:30–36:00
+     Payload assembly block is the hacker-audience payoff.
+     Video cue must be explicitly visible on screen.
+     Factory reset video queued at ~34:00 mark in speaking notes.
+     =================================================================== -->
+<section id="s13-payload" data-slide="S13">
+  <div class="slide tight">
+    <div class="anchor">LAYER 3 &middot; ANE-005 &middot; [DEMO]</div>
+    <div class="s13-fw">
+      <div>
+        <div class="jtag-box">
+          <div class="jb-header">// JTAG STATUS</div>
+          <span class="jb-lbl">fuse:</span> <span class="jb-val warn">NOT BLOWN</span><br>
+          <span class="jb-lbl">access:</span> <span class="jb-val">full read/write</span><br>
+          <span class="jb-lbl">cost:</span> <span class="jb-val">$30 programmer</span><br>
+          <span class="jb-lbl">method:</span> <span class="jb-val">SOP8 clip &rarr; JTAG</span>
+        </div>
+        <div style="margin-top:20px">
+          <div class="outcome-list">
+            <span class="ol-line">factory reset triggered</span>
+            <span class="ol-line">all existing codes wiped</span>
+            <span class="ol-line warn">slot 49: 696969 (elevated)</span>
+            <span class="ol-line warn">audit log: shows clean reset</span>
+          </div>
+        </div>
+      </div>
+      <div class="fw-right">
+        <div class="payload-block">
+          <div class="pb-header">// 38-BYTE PAYLOAD &middot; TI MSP430 ASSEMBLY</div>
+          <span class="comment">; SetMasterCode() at 0x9ECA</span><br>
+          <span class="comment">; hijack execution at 0x9EE8</span><br>
+          <br>
+          <span class="op">BR</span>  #<span class="addr">0xFA20</span>          <span class="comment">; redirect to unused space</span><br>
+          <br>
+          <span class="comment">; payload at 0xFA20</span><br>
+          <span class="comment">; write elevated user 696969 &rarr; slot 49</span><br>
+          <span class="comment">; fires DURING every factory reset</span><br>
+          <span class="comment">; not before. not after. during.</span>
+        </div>
+        <div class="demo-callout">
+          [ VIDEO: factory reset &middot; backdoor code surviving ]
+          <span class="demo-sub">cue at ~34:00 &middot; narrate lightly or let it run &middot; the video is self-explanatory</span>
+        </div>
+        <div class="fw-punchline">
+          "Factory reset. Enters 696969. Opens."<br>
+          Survived multiple resets. Survived multiple boards.<br>
+          38 bytes of TI assembly. Written by a locksmith with bad ideas.
+        </div>
+      </div>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S14 — LAYER 4: USB CABLE (chapter divider)
+     LAYER 4 · 36:00–36:30
+     Keep it crisp — 4 min total for this layer.
+     =================================================================== -->
+<section id="s14-l4-divider" data-slide="S14">
+  <div class="slide divider ch-layer">
+    <div class="anchor">LAYER 4</div>
+    <div class="chapter-num">LAYER 4</div>
+    <div class="chapter">USB CABLE<span class="cur blink"></span></div>
+    <div class="rule">&mdash;&mdash;&mdash; descriptor trust &mdash;&mdash;&mdash;</div>
+    <div class="sub">CP2102 &middot; DL-Windows &middot; GreatFET One + FaceDancer</div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S15 — Descriptor Trust (40/303)
+     LAYER 4 · 36:30–40:00
+     "audit log integrity is left as an exercise." — close the layer.
+     =================================================================== -->
+<section id="s15-cable" data-slide="S15">
+  <div class="slide tight">
+    <div class="anchor">LAYER 4 &middot; USB cable emulation</div>
+    <div class="s15-cable">
+      <div class="cable-box">
+        <div class="cb-header">// DESCRIPTOR MATCH</div>
+        <span class="cb-lbl">VID/PID:</span> <span class="cb-val pass">matched</span><br>
+        <span class="cb-lbl">descriptors:</span> <span class="cb-val pass">matched</span><br>
+        <span class="cb-lbl">vendor requests:</span> <span class="cb-val pass">matched</span><br>
+        <span class="cb-lbl">bulk endpoints:</span> <span class="cb-val pass">matched</span><br>
+        <div class="cb-trust">DL-Windows: TRUSTED</div>
+      </div>
+      <div>
+        <div class="cable-box">
+          <div class="cb-header">// LOOPBACK RESULT</div>
+          <span class="cb-lbl">packets pass:</span> <span class="cb-val warn">40 / 303</span><br>
+          <span class="cb-lbl">authentication:</span> <span class="cb-val fail">NONE</span><br>
+          <span class="cb-lbl">trust model:</span> <span class="cb-val">USB descriptors only</span>
+        </div>
+        <div class="cable-quote" style="margin-top:20px">
+          "40 of 303 is not a full pass.<br>
+          But the software performs zero cryptographic authentication.<br>
+          If you match the descriptor, you're the cable.<br>
+          That's the entire access control model."
+        </div>
+      </div>
+    </div>
+    <div class="s15-footer" style="margin-top:22px">audit log integrity is left as an exercise.</div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S16 — LAYER 5: SYNTHESIS (combined attack chain)
+     SYNTHESIS · 40:00–43:00
+     Stack the four layers. Let the combined picture hit.
+     Supply chain thread surfaces here — don't over-develop.
+     =================================================================== -->
+<section id="s16-synthesis" data-slide="S16">
+  <div class="slide tight">
+    <div class="anchor">LAYER 5 &middot; SYNTHESIS</div>
+    <div class="s16-chain">
+      <div class="chain-row">
+        <div class="chain-connector">
+          <div class="cc-top" style="visibility:hidden"></div>
+          <div class="cc-dot"></div>
+          <div class="cc-bot"></div>
+        </div>
+        <div class="chain-content"><span class="cl">PHYSICAL</span> 4 attacks &middot; zero audit events &middot; no trace</div>
+      </div>
+      <div class="chain-row">
+        <div class="chain-connector">
+          <div class="cc-top"></div>
+          <div class="cc-dot"></div>
+          <div class="cc-bot"></div>
+        </div>
+        <div class="chain-content"><span class="cl">NAND FLASH</span> injected user &middot; Print&ne;Export &middot; invisible to forensic pull</div>
+      </div>
+      <div class="chain-row">
+        <div class="chain-connector">
+          <div class="cc-top"></div>
+          <div class="cc-dot"></div>
+          <div class="cc-bot"></div>
+        </div>
+        <div class="chain-content"><span class="cl">FIRMWARE</span> backdoor survives factory reset &middot; audit shows clean</div>
+      </div>
+      <div class="chain-row">
+        <div class="chain-connector">
+          <div class="cc-top"></div>
+          <div class="cc-dot"></div>
+          <div class="cc-bot" style="visibility:hidden"></div>
+        </div>
+        <div class="chain-content"><span class="cl">CABLE</span> fake audit cable &middot; software trusts it &middot; log data interceptable</div>
+      </div>
+    </div>
+    <div class="chain-end" style="margin-top:14px">
+      combined: credentials &middot; firmware &middot; audit trail &mdash; all manipulable.<br>
+      physical access &middot; $30 programmer &middot; soldering iron &middot; GreatFET.<br>
+      the log submitted to court shows nothing.
+      <span class="supply-note">this lock crosses borders before installation.</span>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S17 — The Systemic Problem
+     SYSTEMIC PROBLEM · 43:00–44:30
+     The argument. "self-auditing endpoint" is the named thesis.
+     =================================================================== -->
+<section id="s17-systemic" data-slide="S17">
+  <div class="slide center">
+    <div class="anchor">SYSTEMIC PROBLEM</div>
+    <div class="s17-systemic">
+      <div class="systemic-decl">
+        A LOCK THAT CONTROLS ACCESS<br>
+        AND WRITES THE AUDIT LOG
+      </div>
+      <div class="systemic-rule"></div>
+      <div class="systemic-verdict">is a suspect writing their own alibi.</div>
+      <div class="systemic-sub">
+        actor = chronicler &middot; manipulate one &rarr; manipulate both<br>
+        self-auditing endpoint &mdash; not specific to this lock
+      </div>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S18 — Observer System Model (constructive fix)
+     SYSTEMIC PROBLEM · 44:30–46:00
+     The cheap fix that doesn't require replacing the lock.
+     =================================================================== -->
+<section id="s18-osm" data-slide="S18">
+  <div class="slide tight">
+    <div class="anchor">SYSTEMIC PROBLEM &middot; Observer System Model</div>
+    <div class="s18-osm">
+      <div class="osm-diagram">
+        <span class="osd-line"><span class="osd-sensor">[ camera &mdash; not on lock power circuit ]</span></span>
+        <span class="osd-line"><span class="osd-arrow">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;</span></span>
+        <span class="osd-line"><span class="osd-sensor">[ door contact &mdash; separate controller &nbsp;&nbsp;]</span> <span class="osd-arrow">&rarr;</span> <span class="osd-node">[ CORROBORATE ]</span></span>
+        <span class="osd-line"><span class="osd-arrow">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;</span></span>
+        <span class="osd-line"><span class="osd-sensor">[ time-correlated cross-reference &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span></span>
+      </div>
+      <div class="osm-check">
+        <span class="ck-line"><span class="ck-q">lock says:</span> opened at 14:32.</span>
+        <span class="ck-line"><span class="ck-q">sensors say:</span> ?</span>
+        <span class="ck-line"><span class="ck-r">discrepancy = caught.</span></span>
+      </div>
+      <div class="osm-callout">cheap to implement. doesn't require replacing the lock.</div>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S19 — The $5 Fix (mitigations)
+     $5 FIX · 46:00–48:00
+     Terminal table. Don't rush the list.
+     Close: "the company knew about the remote wire attack..."
+     =================================================================== -->
+<section id="s19-fix" data-slide="S19">
+  <div class="slide tight">
+    <div class="anchor">$5 FIX &middot; mitigations</div>
+    <div class="s19-fix">
+      <div class="fix-table">
+        <div class="ft-header">
+          <span>MITIGATION</span>
+          <span>LAYER KILLED</span>
+        </div>
+        <div class="ft-row">
+          <div class="ft-mit"><span class="ft-action">blow the JTAG fuse</span></div>
+          <div class="ft-result">Layer 3 &mdash; <span class="killed">firmware (dead)</span></div>
+        </div>
+        <div class="ft-row">
+          <div class="ft-mit"><span class="ft-action">encrypt the NAND</span></div>
+          <div class="ft-result">Layer 2 &mdash; <span class="killed">ciphertext, not plaintext credentials</span></div>
+        </div>
+        <div class="ft-row">
+          <div class="ft-mit"><span class="ft-action">authenticate the cable</span></div>
+          <div class="ft-result">Layer 4 &mdash; <span class="killed">cable (dead)</span></div>
+        </div>
+        <div class="ft-row">
+          <div class="ft-mit"><span class="ft-action">use a TPM</span></div>
+          <div class="ft-result">all layers &mdash; keys in hardware, not in a $30-programmer-accessible chip</div>
+        </div>
+      </div>
+      <div class="s19-cost">combined cost: under $5 per unit. at manufacturing time.</div>
+      <div class="s19-note">
+        each of these is a solved problem. off-the-shelf solutions exist.<br>
+        this isn't an exotic attack chain. this is what happens when a manufacturer decides security is friction.<br>
+        <span class="amber">the company knew about the remote wire attack. decided fixing it would add too much friction.</span>
+      </div>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     S20 — Close (final visible slide — forward arrow locked here)
+     CLOSE · 48:00–50:00
+     Verbatim punchline: "— maybe you should be."
+     DO NOT paraphrase this line.
+     =================================================================== -->
+<section id="s20-close" data-slide="S20">
+  <div class="slide tight">
+    <div class="anchor">CLOSE</div>
+    <div class="s20-close">
+      <div class="close-resources">
+        <span class="cr-url">github.com/qweary/dead-bytes</span>
+        <span class="cr-line">code &middot; firmware dumps &middot; SOP8 clip wiring &middot; FaceDancer scripts &middot; pcap files</span>
+        <span class="cr-line">33 pages of handwritten notes &mdash; including all the wrong turns</span>
+        <span class="cr-line">blog series: five parts &middot; July&ndash;August 2025</span>
+      </div>
+      <div class="close-rule"></div>
+      <div class="close-lines">
+        locks are computers now.<br>
+        computers live in walls.
+      </div>
+      <div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:22px;letter-spacing:1.5px;color:var(--gr);line-height:1.8">
+          Verify your own physical endpoints. And if your vendor tells you they're not worried about it &mdash;
+        </div>
+        <div class="close-punchline">"&mdash; maybe you should be."</div>
+      </div>
+      <div class="close-handle">Qweary &middot; workshop: [TIME/LOCATION] &middot; questions welcome</div>
+    </div>
+    <div class="brand">dead-bytes.deck</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     BACK-POCKET — not in forward nav sequence.
+     Access: 'g' chord → type "nand-wedge" → Enter.
+     Also reachable via URL hash: #/nand-wedge
+     Use if live NAND read/write demo wedges on stage.
+     Covers both Layer 2 (NAND) and Layer 3 (firmware) fallback.
+     =================================================================== -->
+<section id="nand-wedge" data-slide="BP">
+  <div class="slide tight">
+    <div class="anchor">BACK-POCKET &middot; nand demo wedged</div>
+    <div class="bp-nand">
+      <div class="bp-col">
+        <div class="bpc-header">// NAND FLASH &mdash; what the live demo would have shown</div>
+        <span class="bpc-line">SOP8 clip on AT45DB041E</span>
+        <span class="bpc-line">dump: 264-byte pages, plaintext ASCII codes</span>
+        <span class="bpc-line">"0" stored as "B" &mdash; MCU representation artifact</span>
+        <span class="bpc-line">permission flags: F1=Master, E1=Elevated, C1=Supervisor</span>
+        <span class="bpc-line">edit slot: inject user 696969 (elevated)</span>
+        <span class="bpc-line">write back &rarr; lock accepts new credential</span>
+        <span class="bpc-line">Print shows injected user. Export does not.</span>
+      </div>
+      <div class="bp-col">
+        <div class="bpc-header">// FIRMWARE &mdash; what the video would have shown</div>
+        <span class="bpc-line">JTAG fuse: not blown. Full read/write access.</span>
+        <span class="bpc-line">SetMasterCode() at 0x9ECA</span>
+        <span class="bpc-line">hijack at 0x9EE8: BR #0xFA20</span>
+        <span class="bpc-line">38-byte payload at 0xFA20</span>
+        <span class="bpc-line">factory reset triggered &rarr; payload fires during reset</span>
+        <span class="bpc-line">slot 49 populated: 696969 (elevated)</span>
+        <span class="bpc-line">audit log: shows clean reset event</span>
+        <span class="bpc-line">696969 opens the door. survived multiple boards.</span>
+      </div>
+    </div>
+    <div class="bp-footer" style="margin-top:22px">everything is in the repo. all of this is replicable. github.com/qweary/dead-bytes</div>
+    <div class="brand">dead-bytes.deck &middot; back-pocket</div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="lib/reveal.js/dist/reveal.js"></script>
+<script>
+  // ==================================================================
+  // Reveal.js config
+  //   - 1920×1080 base, margin 0 (scales to viewport)
+  //   - transition: none (instant cut)
+  //   - no auto-advance; operator drives every slide
+  //   - no controls-tutorial nag
+  //   - slideNumber: c/t; visible only in speaker view
+  //   - hash: true — enables #/nand-wedge back-pocket addressing
+  //   - fragments: false — slides are static
+  //   - navigationMode: linear
+  // ==================================================================
+  Reveal.initialize({
+    width: 1920,
+    height: 1080,
+    margin: 0,
+    minScale: 0.2,
+    maxScale: 2.0,
+    transition: 'none',
+    backgroundTransition: 'none',
+    controls: true,
+    controlsTutorial: false,
+    progress: false,
+    slideNumber: 'c/t',
+    showSlideNumber: 'speaker',
+    hash: true,
+    history: false,
+    keyboard: true,
+    overview: false,
+    touch: true,
+    fragments: false,
+    navigationMode: 'linear',
+    plugins: []
+  });
+
+  // ==================================================================
+  // Forward-arrow lockdown: cap the navigable sequence at S20.
+  // Back-pocket slide (nand-wedge) is NOT reachable by right-arrow
+  // from S20. Accessible via:
+  //   (1) URL hash: #/nand-wedge
+  //   (2) 'g' goto chord: type "nand-wedge", Enter
+  // ==================================================================
+  const VISIBLE_LAST_ID = 's20-close';
+
+  Reveal.on('ready', () => { syncHud(); });
+  Reveal.on('slidechanged', () => { syncHud(); });
+
+  document.addEventListener('keydown', (e) => {
+    const cur = Reveal.getCurrentSlide();
+    if (!cur) return;
+    if (cur.id === VISIBLE_LAST_ID) {
+      const blockKeys = ['ArrowRight', 'PageDown', 'Space', ' '];
+      if (blockKeys.includes(e.key)) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+      // 'n' and 'N' toggle scanline — let the handler below run
+      if (e.key === 'N') {
+        e.stopImmediatePropagation();
+      }
+    }
+  }, true); // capture phase — runs before reveal's listener
+
+  // ==================================================================
+  // Operator key chords
+  //   h — toggle HUD overlay
+  //   n — toggle scanline overlay
+  //   f — fullscreen
+  //   g — goto chord: prompt for slide id
+  // ==================================================================
+  const hud = document.getElementById('hud');
+  const gotoEl = document.getElementById('goto');
+  const gotoInput = document.getElementById('goto-input');
+  let hudTimer = null;
+
+  function flashHud(ms) {
+    ms = ms || 2500;
+    hud.classList.add('show');
+    if (hudTimer) clearTimeout(hudTimer);
+    hudTimer = setTimeout(() => hud.classList.remove('show'), ms);
+  }
+  function syncHud() {
+    flashHud(1200);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target === gotoInput) return;
+
+    if (e.key === 'h' || e.key === 'H') {
+      if (hud.classList.contains('show')) hud.classList.remove('show');
+      else flashHud(60000);
+      e.preventDefault();
+    }
+    if (e.key === 'n' || e.key === 'N') {
+      document.body.classList.toggle('no-scanline');
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+    if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+      e.preventDefault();
+    }
+    if (e.key === 'g' || e.key === 'G') {
+      gotoEl.classList.add('show');
+      gotoInput.value = '';
+      gotoInput.focus();
+      e.preventDefault();
+    }
+    if (e.key === 'Escape' && gotoEl.classList.contains('show')) {
+      gotoEl.classList.remove('show');
+      e.preventDefault();
+    }
+  }, false);
+
+  gotoInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const id = gotoInput.value.trim().replace(/^#\/?/, '');
+      gotoEl.classList.remove('show');
+      if (id) {
+        const target = document.getElementById(id);
+        if (target) {
+          const slides = Array.from(document.querySelectorAll('.reveal .slides > section'));
+          const idx = slides.indexOf(target);
+          if (idx >= 0) Reveal.slide(idx);
+        } else {
+          window.location.hash = '#/' + id;
+        }
+      }
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (e.key === 'Escape') {
+      gotoEl.classList.remove('show');
+      e.preventDefault();
+    }
+  });
+</script>
+</body>
+</html>
