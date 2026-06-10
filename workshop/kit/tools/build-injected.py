@@ -44,8 +44,8 @@ OFF_PERM        = 0x00C9
 # Canonical workshop patch table — the canonical 3-slot workshop payload.
 DEFAULT_PATCHES = [
     {"slot": 19, "code": "133769", "perm": 0xF1, "perm_name": "Master"},
-    {"slot": 32, "code": "420420", "perm": 0xC1, "perm_name": "Supervisor"},
-    {"slot": 49, "code": "696969", "perm": 0xE1, "perm_name": "Elevated"},
+    {"slot": 32, "code": "420420", "perm": 0xE1, "perm_name": "Elevated"},
+    {"slot": 49, "code": "696969", "perm": 0xC1, "perm_name": "Supervisor"},
 ]
 
 
@@ -211,7 +211,7 @@ def main() -> None:
     print(f"Wrote {args.output} ({len(injected):,} bytes).")
     print(f"Run: md5sum {args.output}")
     print(f"Expected MD5 for the canonical workshop patch against the canonical baseline:")
-    print(f"  47b6faaf1217389afa7a879d93c024dd")
+    print(f"  741dcc79d9975b956d9e1c0a14de0e2b")
 
 
 if __name__ == "__main__":

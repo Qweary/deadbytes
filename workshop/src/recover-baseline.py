@@ -2,7 +2,7 @@
 """
 recover-baseline.py — Write the canonical workshop baseline back to a chip.
 
-Defensive wrapper around `sudo minipro -i -p 'AT45DB041E[Page264]@SOIC8' -w
+Defensive wrapper around `minipro -i -p 'AT45DB041E[Page264]@SOIC8' -w
 <baseline>` that recovers a lock-board AT45DB041E from a botched workshop write.
 Refuses to run unless the baseline file matches the bench-validated MD5 of the
 intact-lock golden master, and unless the file is exactly 540,672 bytes (the
@@ -45,7 +45,7 @@ import tempfile
 # CANONICAL_BASELINE_MD5 — the bench-validated MD5 of the intact in-service lock
 #   capture. Two independent reads byte-identical to this MD5 on the bench; the
 #   same MD5 is the basis for build-injected.py's expected post-build MD5
-#   (47b6faaf1217389afa7a879d93c024dd) when the canonical 3-slot patch is
+#   (741dcc79d9975b956d9e1c0a14de0e2b) when the canonical 3-slot patch is
 #   applied. FACILITATOR-GUIDE.md Pocket Reference also names this MD5 as
 #   "Baseline MD5" — the workshop convention is one baseline per station, and
 #   that one baseline IS this canonical master.
@@ -94,6 +94,9 @@ CANONICAL_BASELINE_CANDIDATES = [
 ]
 DEVICE_NAME = "AT45DB041E[Page264]@SOIC8"
 MINIPRO_BIN = "minipro"
+# Retained for compatibility; no longer prefixes minipro. The installed uaccess
+# udev rule grants the logged-in user direct device access, so the live
+# write/read runs unprivileged.
 SUDO_BIN = "sudo"
 
 
@@ -214,17 +217,20 @@ def preflight(baseline_path: str) -> str:
 
 def build_minipro_cmd(baseline_path: str, output_path: str | None = None,
                       mode: str = "write") -> list[str]:
-    """Construct the sudo + minipro argv. mode ∈ {'write','read'}.
+    """Construct the minipro argv. mode ∈ {'write','read'}.
 
     Read mode targets `output_path` (for the post-write verify); write mode
     targets `baseline_path` (the canonical baseline). Both use the standing
     -i flag and the fully-qualified device name (per bench validation).
+
+    No sudo: the uaccess udev rule grants the logged-in user direct device
+    access, so minipro runs as the unprivileged facilitator/attendee.
     """
     if mode == "write":
-        return [SUDO_BIN, MINIPRO_BIN, "-i", "-p", DEVICE_NAME, "-w", baseline_path]
+        return [MINIPRO_BIN, "-i", "-p", DEVICE_NAME, "-w", baseline_path]
     if mode == "read":
         assert output_path is not None
-        return [SUDO_BIN, MINIPRO_BIN, "-i", "-p", DEVICE_NAME, "-r", output_path]
+        return [MINIPRO_BIN, "-i", "-p", DEVICE_NAME, "-r", output_path]
     raise ValueError(f"unknown mode {mode!r}")
 
 
@@ -496,7 +502,7 @@ def main() -> None:
         print()
         print("  --skip-verify set; trusting minipro's built-in verification.")
         print(f"  To verify manually:")
-        print(f"    sudo minipro -i -p '{DEVICE_NAME}' -r post-recovery.bin")
+        print(f"    minipro -i -p '{DEVICE_NAME}' -r post-recovery.bin")
         print(f"    md5sum post-recovery.bin  # expect: {baseline_md5}")
 
     print()

@@ -11,9 +11,10 @@
 #   2. Verify kit integrity, hardware-free      (make selftest)
 #   3. Stand up the station                      (kit/install.sh)
 #
-# After it finishes the laptop has minipro on PATH, the udev rules installed,
-# the user in plugdev, and ~/workshop/ populated with the docs, the tools
-# (decode/read/write + the menu + the panel), and the canonical baseline.
+# After it finishes the laptop has minipro on PATH, the udev rules installed
+# (the uaccess rule grants sudo-free device access — no group change, no
+# logout), and ~/workshop/ populated with the docs, the tools (decode/read/write
+# + the menu + the panel), and the canonical baseline.
 #
 # PATH-RELATIVE BY DESIGN: every path is resolved from THIS script's own
 # location, so the repo can be cloned anywhere. Nothing here hardcodes a home

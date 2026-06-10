@@ -165,6 +165,24 @@ else
         note_fail "lock-menu.py load/quit nonzero exit"
         echo "    FAIL: tools/lock-menu.py did not load + quit cleanly"
     fi
+
+    # Decode smoke — the default teaching sample must surface the three baked
+    # workshop codes (133769 Master @19 / 420420 Elevated @32 / 696969 Supervisor
+    # @49). decode-codes.py with no args operates on a copy of the default sample,
+    # so a single grep over its output confirms the sample is the 3-codes teaching
+    # dump and the read default points at it.
+    decode_out="$(python3 "${KIT_DIR}/tools/decode-codes.py" 2>/dev/null)"
+    if echo "$decode_out" | grep -q '133769' \
+       && echo "$decode_out" | grep -q '420420' \
+       && echo "$decode_out" | grep -q '696969'; then
+        echo "    PASS: tools/decode-codes.py default decode shows the 3 workshop codes"
+    else
+        note_fail "decode-codes.py default sample missing the 3 workshop codes"
+        echo "    FAIL: tools/decode-codes.py default decode did not show all 3 workshop codes"
+        echo "    --- decode-codes.py output ---"
+        echo "$decode_out" | sed 's/^/    /'
+        echo "    --- end output ---"
+    fi
 fi
 
 # -----------------------------------------------------------------------------

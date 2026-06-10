@@ -232,19 +232,13 @@ step_install_udev() {
         fail "install-udev" "no udev rule files found under ${src_dir}"
     fi
 
-    # Ensure plugdev group exists (Kali has it by default; defensive)
-    if ! getent group plugdev >/dev/null; then
-        info "creating plugdev group"
-        groupadd plugdev
-    fi
-
-    # Add the invoking user to plugdev if not already
-    if ! id -nG "$SUDO_USER" | tr ' ' '\n' | grep -qx plugdev; then
-        info "adding ${SUDO_USER} to plugdev group (takes effect on next login)"
-        usermod -aG plugdev "$SUDO_USER"
-    else
-        info "${SUDO_USER} already in plugdev group"
-    fi
+    # Device access is granted by the uaccess rule (61-minipro-uaccess.rules:
+    # ENV{ID_MINIPRO}=="1", TAG+="uaccess"), which gives the logged-in user
+    # direct access to the programmer with NO group membership and NO logout.
+    # That makes minipro runnable sudo-free the moment the T48 is plugged in.
+    # We deliberately do NOT add the user to plugdev or require a re-login — the
+    # 61-minipro-plugdev.rules file is still installed above (harmless), but the
+    # uaccess rule is the load-bearing one.
 
     # Reload udev
     if command -v udevadm >/dev/null 2>&1; then
@@ -343,8 +337,8 @@ main() {
     info "Next steps:"
     info "  1. Plug in the T48 programmer over USB."
     info "  2. Verify: lsusb | grep a466:0a53   (T48 vendor:product)"
-    info "  3. Verify non-root access: groups ${SUDO_USER} | grep plugdev"
-    info "     (if plugdev was just added, ${SUDO_USER} must log out + back in)"
+    info "  3. Device access is sudo-free and immediate — the uaccess udev rule"
+    info "     grants ${SUDO_USER} direct access. No group change, no logout needed."
     info "  4. Read ~/${WORKSHOP_DIRNAME}/docs/FACILITATOR-GUIDE.md for the bench-day runbook."
     info ""
     info "Try the self-service tools (safe, no hardware needed):"

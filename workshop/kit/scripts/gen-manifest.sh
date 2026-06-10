@@ -44,7 +44,8 @@ role_for() {
         tools/lock-tool.py)                           echo "tool|unified read/write CLI; bakes a custom code into a copy + re-decodes (W2/W3 bedrock)" ;;
         tools/lock-menu.py)                           echo "tool|plain-text menu front-end wrapping lock-tool.py (thin convenience layer)" ;;
         tools/lock-panel.py)                          echo "tool|localhost browser control panel: READ button + custom-value field + WRITE button" ;;
-        dumps/intact-lock-AT45DB041E-main-2026-05-20.bin) echo "dump|canonical intact-lock baseline (540,672 bytes, sensitive)" ;;
+        dumps/intact-lock-AT45DB041E-main-2026-05-20.bin) echo "dump|canonical intact-lock baseline (540,672 bytes, sensitive, workshop-internal)" ;;
+        dumps/workshop-sample-3codes-AT45DB041E-2026-05-20.bin) echo "dump|teaching sample (540,672 bytes, sensitive, workshop-internal): canonical baseline + the 3 default workshop codes injected additively at slots 19/32/49; default READ source for the tools" ;;
         dumps/MANIFEST.md)                            echo "manifest|sub-manifest for dumps/ — separated because .bin files are sensitive" ;;
         *)                                            echo "auxiliary|unclassified kit file" ;;
     esac
@@ -94,14 +95,14 @@ mapfile -t FILES < <(
     echo
     echo "## Sensitive content"
     echo
-    echo "\`dumps/intact-lock-AT45DB041E-main-2026-05-20.bin\` is a captured memory image of a real Alarm Lock T2/T3 unit. Treat as workshop-internal: do not redistribute outside facilitator chain-of-custody. See \`dumps/MANIFEST.md\` for the dump-specific sub-manifest and provenance chain."
+    echo "The two \`dumps/*.bin\` files derive from a captured memory image of a real Alarm Lock T2/T3 unit: \`intact-lock-AT45DB041E-main-2026-05-20.bin\` (the code-free canonical recovery baseline) and \`workshop-sample-3codes-AT45DB041E-2026-05-20.bin\` (the teaching sample — the baseline with the three default workshop codes injected additively, and the tools' default READ source). Treat both as workshop-internal: do not redistribute outside facilitator chain-of-custody. See \`dumps/MANIFEST.md\` for the dump-specific sub-manifest and provenance chain."
 } > "${TOP_MANIFEST}"
 
 # Dumps sub-manifest
 {
     echo "# dumps/ — sub-manifest"
     echo
-    echo "Sensitive content. The single \`.bin\` here is a captured memory image of a real Alarm Lock T2/T3 lock board. See \`../docs/DATAFLASH-DECODE-REFERENCE.md\` for the dump format + validation reference."
+    echo "Sensitive content. The \`.bin\` files here derive from a captured memory image of a real Alarm Lock T2/T3 lock board. Two ship: the code-free canonical recovery baseline, and a teaching sample (the baseline with the three default workshop codes injected additively). See \`../docs/DATAFLASH-DECODE-REFERENCE.md\` for the dump format + validation reference."
     echo
     echo "| File | Size (bytes) | MD5 | Provenance |"
     echo "|---|---:|---|---|"
@@ -111,7 +112,10 @@ mapfile -t FILES < <(
         md5=$(md5sum "$f" | awk '{print $1}')
         case "$f" in
             intact-lock-AT45DB041E-main-2026-05-20.bin)
-                prov="canonical intact-lock baseline; two independent bench reads byte-identical to this MD5; used as recover-baseline.py default; AT45DB041E main array (2048 pages * 264 bytes)"
+                prov="canonical intact-lock baseline; two independent bench reads byte-identical to this MD5; used as recover-baseline.py default; code-free so the MD5 recovery gate is never corrupted; AT45DB041E main array (2048 pages * 264 bytes)"
+                ;;
+            workshop-sample-3codes-AT45DB041E-2026-05-20.bin)
+                prov="teaching sample: canonical baseline + the 3 default workshop codes injected additively at slots 19/32/49 (133769 Master / 420420 Elevated / 696969 Supervisor); default READ source for decode-codes.py and lock-tool.py; AT45DB041E main array (2048 pages * 264 bytes)"
                 ;;
             *)
                 prov="unclassified dump"

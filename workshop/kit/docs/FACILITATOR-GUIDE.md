@@ -4,20 +4,19 @@
 
 ---
 
-> **The workshop is self-service — this guide is for running a staffed session.**
-> Attendees do not need a facilitator. The whole workshop now runs from the
-> three-command flow in `PARTICIPANT-HANDOUT.md` — `sudo ./bootstrap.sh` to set
-> up, `lock-tool.py read --all` to read, `lock-tool.py write ...` to write — on a
-> copy of the bundled sample dump, no hardware required. An attendee with the
-> repo and a Kali laptop can complete it solo.
+> **This is the ORGANIZER / operations reference for running a STAFFED station.**
+> Attendees never open this guide. They run one command — `./bin/start.sh` from
+> the cloned repo root (Windows: `start.ps1`) — which opens a local browser
+> READ/WRITE panel, and they follow the `PARTICIPANT-HANDOUT.md` card. That GUI
+> plus the card is the entire attendee experience: no hardware, no setup, no
+> `sudo`. A CLI fallback (`lock-tool.py read --all` / `write ...`, run straight
+> from the clone) is in the handout for anyone who prefers typing.
 >
-> This guide is for the organizer who *is* staffing a session: hardware setup and
-> counts, the software verification checklist, the workshop-distribution dump
-> production step, troubleshooting, and the pocket reference. Where it describes a
-> facilitator at an attendee's elbow, read that as **rotation support for
-> attendees who want it**, not a step the attendee can't proceed without. The
-> per-attendee flow below is the live-hardware path; the sample-dump path in the
-> handout needs none of it.
+> This guide is for the organizer who *is* staffing a session: standing up the
+> station laptops, the hardware counts, the software verification checklist, the
+> recovery workflow, the workshop-distribution dump production step, and
+> troubleshooting. The per-station flow below is the **live-hardware** path; the
+> no-hardware sample-dump path the attendees use needs none of it.
 
 ---
 
@@ -53,17 +52,7 @@ Allow 60 minutes minimum the morning of the workshop, plus ~30 minutes per lock 
 
 ### The night before — resin cleaning the SOIC-8 chips
 
-The AT45DB041E on each lock board ships under a layer of conformal-coating resin. The SOIC-8 clip cannot bite through it. **Do this the night before, on all four lock boards, in your tent.** Per board:
-
-- [ ] Identify the AT45DB041E — Adesto markings, 8-pin SOIC, near the MSP430
-- [ ] Apply isopropyl alcohol (91 % or higher) to the resin over the chip and the eight leads
-- [ ] Let it sit 2–3 minutes; the resin softens
-- [ ] Scrape with a wooden toothpick or a plastic spudger — not metal; pin-1 marking is fragile
-- [ ] Repeat until all eight leads are clean metal under good light
-- [ ] Wipe with a fresh alcohol pad; let dry
-- [ ] Bag and label the prepped board with the station letter
-
-If you finish a board and the chip body shows any visible discoloration or the leads bridge solder under the resin you scraped, swap it for a spare. A board you cleaned at midnight under a headlamp is not the time to fight a marginal chip.
+The AT45DB041E on each lock board ships under conformal-coating resin that the SOIC-8 clip cannot bite through, so **all four lock boards need their chip resin-cleaned the night before.** Soften the resin over the chip and its eight leads with 91 %+ isopropyl (2–3 min), scrape it off with a wooden toothpick or plastic spudger (never metal — the pin-1 marking is fragile), wipe with a fresh alcohol pad, let dry, then bag and label each prepped board with its station letter. The goal is clean metal on all eight leads under good light. If a chip body shows discoloration or leads bridge solder after scraping, swap the board for a spare — a marginal chip is not worth fighting at the bench.
 
 ### Hardware count (Qweary brings; any helping organizers verify on arrival)
 
@@ -71,7 +60,7 @@ If you finish a board and the chip body shows any visible discoloration or the l
 - [ ] **4× Xgecu T48 programmers** — from the procurement run; serial numbers logged
 - [ ] **4× SOIC-8 clips** — 1.27 mm pitch, 8-pin, with the ZIF ICSP adapter that connects clip-flying-leads to the T48's ICSP header
 - [ ] **1–2× sets of individual long clips + breakout leads** (operator kit, NOT a per-station item) — ad-hoc-only fallback a facilitator may reach for if a specific board geometry defeats the SOIC-8 clip. **Not a standard station method; do not put it in front of attendees as a documented procedure.** The SOIC-8 clip is the per-station method.
-- [ ] **4× Kali laptops** — minipro 0.7.4 pre-installed (the facilitator kit's `install.sh` does this); udev rules in `/etc/udev/rules.d/`; facilitator users in `plugdev`; the workshop-distribution dump (`intact-lock-AT45DB041E-main-2026-05-20-workshop.bin`) and the injected-codes construction script (`build-injected.py` — see §"Workshop-Distribution Dump Production" below) pre-staged in `~/workshop/`
+- [ ] **4× Kali laptops** — the cloned repo present; `minipro` 0.7.4 installed via the kit's `sudo ./install.sh` (binary on `$PATH`, udev rules — including `61-minipro-uaccess.rules` — in `/etc/udev/rules.d/`); the live read/write is `sudo`-free via the uaccess rule (no `plugdev` group, no log-out/log-in); the workshop-distribution dump (`intact-lock-AT45DB041E-main-2026-05-20-workshop.bin`) and the injected-codes construction script (`build-injected.py` — see §"Workshop-Distribution Dump Production" below) staged at `workshop/kit/tools/` in the clone
 - [ ] **2× spare T48s** — hot-swap if a programmer flakes
 - [ ] **6× spare SOIC-8 clips** — they fail mechanically; 1.5 per station of spare is the right ratio
 - [ ] **8× spare AT45DB041E baseline dumps** — `intact-lock-AT45DB041E-main-2026-05-20.bin` on a USB stick at each station, for recovery writes (§"Recovery — write the baseline back")
@@ -98,12 +87,12 @@ ls /etc/udev/rules.d/ | grep -i minipro
 lsusb | grep a466
 # expected: Bus xxx Device xxx: ID a466:0a53 Xgecu T48
 
-# 4. Confirm the toolchain opens the programmer
-sudo minipro -k
+# 4. Confirm the toolchain opens the programmer (sudo-free via the uaccess rule)
+minipro -k
 # expected: t48: T48
 
 # 5. Confirm the workshop-distribution dump is on the laptop
-md5sum ~/workshop/intact-lock-AT45DB041E-main-2026-05-20-workshop.bin
+md5sum workshop/kit/tools/intact-lock-AT45DB041E-main-2026-05-20-workshop.bin
 # expected: the workshop-distribution MD5 you produced in advance per the production note below
 ```
 
@@ -115,6 +104,25 @@ If any of these fail at any station, swap to a spare laptop or pull the operator
 - [ ] Wind: handouts will blow. A rock per station, or fold them in half
 - [ ] Lighting: workshop runs into late afternoon / early evening; if you are anywhere near sunset by 70:00, have a headlamp per station
 - [ ] Table layout: four programmer tables in a row, standalone demos on a separate table, drill station outside the tent with clear floor space and ear-protection visible from the entry — that visual cue alone manages the noise expectation
+
+### The two bundled `.bin` files
+
+The kit ships two distinct dumps — keep them straight:
+
+| File | MD5 | Role |
+|---|---|---|
+| `intact-lock-AT45DB041E-main-2026-05-20.bin` | `eb6acff32ef13b29ac6ebed10d77316d` | **Code-free recovery baseline.** The intact in-service capture with no workshop codes. This is what `recover-baseline.py` flashes back to restore a clean slate. 540,672 bytes. |
+| `workshop-sample-3codes-AT45DB041E-2026-05-20.bin` | `741dcc79d9975b956d9e1c0a14de0e2b` | **Teaching sample — the tools' default READ source.** The baseline with the three default codes baked in additively at slots 19/32/49, so a no-hardware `read --all` shows real codes (mirroring the live demo) without faking anything. |
+
+The three default codes baked into the teaching sample:
+
+| Slot | Code | Bytes (packed BCD) | Role | Perm byte |
+|---|---|---|---|---|
+| 19 | `133769` | `0x13 0x37 0x69` | Master | `0xF1` |
+| 32 | `420420` | `0x42 0xB4 0x2B` | Elevated | `0xE1` |
+| 49 | `696969` | `0x69 0x69 0x69` | Supervisor | `0xC1` |
+
+Slot 32 (`420420`) carries the `0xB`-for-zero demonstration — its two zero digits encode as nibble `0xB` (`0x42 0xB4 0x2B`). A custom `write` is additive: it stacks on top of these three and preserves every other slot; writing into an already-occupied slot (19/32/49) prints an OVERWRITE warning before proceeding, while writing into an empty slot just adds.
 
 ### Workshop-Distribution Dump Production
 
@@ -169,7 +177,7 @@ ls -l intact-lock-AT45DB041E-main-2026-05-20-workshop.bin
 # size must be 540,672 bytes (the redaction does not change length)
 ```
 
-Record the workshop-distribution MD5 in your facilitator pocket reference. Each station laptop's `~/workshop/` directory should hold this file, the baseline, the injected-codes construction script, and a copy of the handout.
+Record the workshop-distribution MD5 in your organizer pocket reference. Each station laptop's `workshop/kit/tools/` directory should hold this file, the code-free recovery baseline, the teaching sample, and the injected-codes construction script.
 
 ---
 
@@ -194,7 +202,7 @@ Anyone who only made it through S1/S2/D1 leaves understanding (a) what the flash
 - 1× prepped Alarm Lock T2/T3 board (resin cleaned per the night-before step)
 - 1× Xgecu T48 programmer
 - 1× SOIC-8 clip + ZIF ICSP adapter
-- 1× Kali laptop, minipro 0.7.4 verified, workshop-distribution dump in `~/workshop/`
+- 1× Kali laptop, minipro 0.7.4 verified (`sudo`-free via the uaccess rule), the cloned repo with the workshop-distribution dump staged at `workshop/kit/tools/`
 - 1× USB-A cable (data, not charge-only)
 - 1× headlamp
 - 1× clear bench area for the attendee to work alongside the facilitator
@@ -248,7 +256,7 @@ This is where the workshop lives. Each programmer station runs the same flow on 
 
 #### The per-attendee flow at a programmer station (25 min)
 
-This is the **live-hardware** path, for an attendee who wants to do it on a real lock. Read the whole section before the workshop so you can support it. Attendees who just want the lesson run the sample-dump path in the handout (`lock-tool.py read --all` / `write ...`) with no hardware and no help. When you do ride a station, you are reading from the same pages the attendee is — you are support, not a gate. The steps below describe the manual `minipro` flow on real hardware; the self-service tools wrap the same operations behind the `--live` flag.
+This is the **live-hardware** path, for an attendee who wants to do it on a real lock. Read the whole section before the workshop so you can support it. Attendees who just want the lesson run the no-hardware path (`./bin/start.sh`, or the `lock-tool.py read --all` / `write ...` CLI fallback) with no hardware and no help. The steps below describe the manual `minipro` flow on real hardware so you understand what is happening under the hood; in practice the self-service tools wrap the same operations behind a `--live` flag (`lock-tool.py read --all --live`, `lock-tool.py write ... --live`, `recover-baseline.py --live`), which is the path to walk an attendee through. The live read/write is `sudo`-free — the bundled `61-minipro-uaccess.rules` grants the logged-in user direct access to the T48.
 
 **Step 1 — Confirm the lock works as it ships (2 min)**
 
@@ -268,11 +276,10 @@ This is the **live-hardware** path, for an attendee who wants to do it on a real
 
 **Step 3 — Read the chip (3 min)**
 
-At the laptop:
+At the laptop (the raw `minipro` read; `lock-tool.py read --all --live` wraps this same operation). It is `sudo`-free via the uaccess udev rule, and runs from any directory in the clone:
 
 ```bash
-cd ~/workshop
-sudo minipro -i -p 'AT45DB041E[Page264]@SOIC8' -r my-dump.bin
+minipro -i -p 'AT45DB041E[Page264]@SOIC8' -r my-dump.bin
 ```
 
 - The `-i` flag suppresses some interactive prompts; the device name `AT45DB041E[Page264]@SOIC8` is the canonical minipro identifier for the 264-byte-page DataFlash in its SOIC-8 package
@@ -315,20 +322,20 @@ Let them answer. The answer this prompt is reaching for: the lock was re-mastere
 
 **Step 5 — Build the injection payload (4 min)**
 
-You are going to inject three codes at three privilege levels in three scattered slots. The handout has the patch table; the script `build-injected.py` in `~/workshop/` will produce the modified dump from the attendee's `my-dump.bin`. (The patch table is also reproduced in the handout for reference — the worked example.)
+You are going to inject three codes at three privilege levels in three scattered slots. The script `build-injected.py` at `workshop/kit/tools/` in the clone produces the modified dump from the attendee's `my-dump.bin`. (The patch table below is the worked example.)
 
 | Slot | Code | Code bytes (packed BCD) | Permission | Permission byte |
 |---|---|---|---|---|
 | 19 | `133769` | `0x13 0x37 0x69` | Master | `0xF1` |
-| 32 | `420420` | `0x42 0xB4 0x2B` | Supervisor | `0xC1` |
-| 49 | `696969` | `0x69 0x69 0x69` | Elevated | `0xE1` |
+| 32 | `420420` | `0x42 0xB4 0x2B` | Elevated | `0xE1` |
+| 49 | `696969` | `0x69 0x69 0x69` | Supervisor | `0xC1` |
 
 Walk them through slot 32 specifically: the code `420420` has two zero digits, in the third and sixth positions. Those zeros are encoded as the nibble value `0xB`, not as ASCII `0x30` and not as BCD `0x00`. So code byte 2 for slot 32 = nibbles `B, 4` = `0xB4` (the leading nibble carries the zero digit from position 3). Code byte 3 for slot 32 = nibbles `2, B` = `0x2B` (the trailing nibble carries the zero digit from position 6). This is one of the workshop's payoff moments — show them the bytes, point at where the `0xB` lands in the nibble, and tell them: "If `420420` unlocks the lock, this is the rule for the digit zero. If `420420` is the only one that fails, the rule is something different."
 
-At the laptop:
+At the laptop (run from any directory in the clone):
 
 ```bash
-python3 ~/workshop/build-injected.py my-dump.bin injected.bin
+python3 workshop/kit/tools/build-injected.py my-dump.bin injected.bin
 md5sum injected.bin
 xxd injected.bin | sed -n '1,20p'
 ```
@@ -345,7 +352,7 @@ The script applies the 15-byte patch from the table above to the attendee's dump
 - `2b` at column `0x85` (slot 32 code byte 3 — the trailing digit-zero nibble)
 - `69` at column `0x96` (slot 49 code byte 3)
 - `01` at columns `0xAA`, `0xB7`, `0xC8` (the three active flags)
-- `f1` at column `0xDC` (slot 19 Master), `c1` at column `0xE9` (slot 32 Supervisor), `e1` at column `0xFA` (slot 49 Elevated)
+- `f1` at column `0xDC` (slot 19 Master), `e1` at column `0xE9` (slot 32 Elevated), `c1` at column `0xFA` (slot 49 Supervisor)
 
 If any of those bytes is missing, the script did not run cleanly — re-run it and check the source dump.
 
@@ -356,7 +363,7 @@ If any of those bytes is missing, the script did not run cleanly — re-run it a
 The clip is still on the chip. The lock batteries are still out. The T48 is powering the chip through the clip.
 
 ```bash
-sudo minipro -i -p 'AT45DB041E[Page264]@SOIC8' -w injected.bin
+minipro -i -p 'AT45DB041E[Page264]@SOIC8' -w injected.bin
 ```
 
 - This takes about 20 seconds. minipro reports `Verification OK` at the end
@@ -366,7 +373,7 @@ sudo minipro -i -p 'AT45DB041E[Page264]@SOIC8' -w injected.bin
 Read back to confirm:
 
 ```bash
-sudo minipro -i -p 'AT45DB041E[Page264]@SOIC8' -r post-write.bin
+minipro -i -p 'AT45DB041E[Page264]@SOIC8' -r post-write.bin
 cmp injected.bin post-write.bin && echo "FULL IMAGE MATCH — write took"
 ```
 
@@ -381,8 +388,8 @@ If `cmp` reports differences only in the audit log band (offsets `0x42000`–`0x
 - Wait for the lock's boot chirp / LED cycle to complete
 - Punch each code in sequence:
   - `133769` → should unlock (slot 19 Master)
-  - `420420` → should unlock (slot 32 Supervisor — this validates the `0xB`-for-zero rule)
-  - `696969` → should unlock (slot 49 Elevated)
+  - `420420` → should unlock (slot 32 Elevated — this validates the `0xB`-for-zero rule)
+  - `696969` → should unlock (slot 49 Supervisor)
   - `123456` → still unlocks (slot 0, untouched)
 
 `[CHECKPOINT]` All four codes unlock the lock. This is the workshop's central proof. If any code fails, see §"What it means if a code fails" below.
@@ -406,12 +413,12 @@ This is the **defender's takeaway**, not a bug in the attack. Land it that way. 
 If any code fails (Step 7), or if the lock stops responding entirely, write the baseline back to restore the chip:
 
 ```bash
-sudo minipro -i -p 'AT45DB041E[Page264]@SOIC8' -w intact-lock-AT45DB041E-main-2026-05-20.bin
+python3 workshop/kit/tools/recover-baseline.py --live
 ```
 
-- The baseline is on the station laptop at `~/workshop/intact-lock-AT45DB041E-main-2026-05-20.bin`
+- `recover-baseline.py --live` flashes the **code-free recovery baseline** (`intact-lock-AT45DB041E-main-2026-05-20.bin`, MD5 `eb6acff32ef13b29ac6ebed10d77316d`) back to the chip — `sudo`-free via the uaccess rule. (The equivalent raw command is `minipro -i -p 'AT45DB041E[Page264]@SOIC8' -w workshop/kit/tools/intact-lock-AT45DB041E-main-2026-05-20.bin`.)
 - The AT45DB041E has no OTP fuses and no auto-lock-on-write behavior; the recovery write is unconditionally available
-- After recovery, slot 0 is `123456` Normal again, all other slots empty, audit log intact
+- After recovery, slot 0 is `123456` Normal again, the three workshop codes are gone, audit log intact
 
 Recovery is the safety net. The lock cannot be bricked by this attack — only by a power glitch during the write itself, and even then the recovery write usually reseats it.
 
@@ -423,7 +430,7 @@ As one attendee finishes Step 7 (or Step 8), whoever is supporting that station 
 
 1. Recovers the chip to baseline (Step 9) so the next attendee starts from a clean state. The recovery write takes ~20 seconds; do it while the finishing attendee is talking to their friend or grabbing water
 2. Unclips the SOIC-8 from the chip, lays the clip on the bench
-3. Wipes the laptop's `my-dump.bin`, `injected.bin`, `post-write.bin` from `~/workshop/`
+3. Wipes the per-attendee `my-dump.bin`, `injected.bin`, `post-write.bin` working files from the clone
 4. Signals that a programmer slot is open so a waiting attendee can rotate in
 
 The next attendee rotates in. Reset the bench, re-clip (or have the attendee re-clip, depending on their comfort), restart at Step 1.
@@ -529,38 +536,39 @@ Refuse politely. Glasses and ear protection are at the entry to the station for 
 
 ---
 
-## Facilitator Pocket Reference
+## Organizer Pocket Reference
 
-Tear this out and put it in your back pocket. Everything you need to drive a programmer station in two columns.
+Tear this out and put it in your back pocket. Everything you need to drive a programmer station in two columns. All live commands are `sudo`-free (the uaccess udev rule) and run from any directory in the clone.
 
-### The minipro commands
+### The live commands (raw minipro under the hood; `lock-tool.py ... --live` wraps them)
 
 ```
-Read:    sudo minipro -i -p 'AT45DB041E[Page264]@SOIC8' -r my-dump.bin
-Build:   python3 ~/workshop/build-injected.py my-dump.bin injected.bin
-Write:   sudo minipro -i -p 'AT45DB041E[Page264]@SOIC8' -w injected.bin
-Verify:  sudo minipro -i -p 'AT45DB041E[Page264]@SOIC8' -r post-write.bin
+Read:    minipro -i -p 'AT45DB041E[Page264]@SOIC8' -r my-dump.bin
+Build:   python3 workshop/kit/tools/build-injected.py my-dump.bin injected.bin
+Write:   minipro -i -p 'AT45DB041E[Page264]@SOIC8' -w injected.bin
+Verify:  minipro -i -p 'AT45DB041E[Page264]@SOIC8' -r post-write.bin
          cmp injected.bin post-write.bin
-Recover: sudo minipro -i -p 'AT45DB041E[Page264]@SOIC8' -w \
-           ~/workshop/intact-lock-AT45DB041E-main-2026-05-20.bin
+Recover: python3 workshop/kit/tools/recover-baseline.py --live
+         (raw: minipro -i -p 'AT45DB041E[Page264]@SOIC8' -w \
+            workshop/kit/tools/intact-lock-AT45DB041E-main-2026-05-20.bin)
 ```
 
-### Baseline + workshop-distribution dump
+### The two bundled dumps
 
 ```
-Baseline MD5:    eb6acff32ef13b29ac6ebed10d77316d  (intact in-service lock)
-Injected MD5:    47b6faaf1217389afa7a879d93c024dd  (3-slot patch applied)
-Workshop-dist:   [your produced MD5]               (baseline + audit-log byte-5 zeroed)
-Dump size:       540,672 bytes (main array, 264-byte native page mode)
-                 540,800 if a tool also captures the Security Register
+Recovery baseline MD5:  eb6acff32ef13b29ac6ebed10d77316d  (code-free; what recover flashes back)
+Teaching sample MD5:    741dcc79d9975b956d9e1c0a14de0e2b  (3 default codes baked in; default READ source)
+Workshop-dist MD5:      [your produced MD5]               (baseline + audit-log byte-5 zeroed)
+Dump size:              540,672 bytes (main array, 264-byte native page mode)
+                        540,800 if a tool also captures the Security Register
 ```
 
-### The injection patch table
+### The injection patch table (the three default codes)
 
 ```
 Slot 19  code 133769  bytes 0x13 0x37 0x69  perm 0xF1 Master
-Slot 32  code 420420  bytes 0x42 0xB4 0x2B  perm 0xC1 Supervisor   ← exercises 0xB-for-zero
-Slot 49  code 696969  bytes 0x69 0x69 0x69  perm 0xE1 Elevated
+Slot 32  code 420420  bytes 0x42 0xB4 0x2B  perm 0xE1 Elevated     ← exercises 0xB-for-zero
+Slot 49  code 696969  bytes 0x69 0x69 0x69  perm 0xC1 Supervisor
 ```
 
 ### Slot N offset map (apply N from 0 to 49)

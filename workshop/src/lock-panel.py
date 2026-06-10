@@ -28,8 +28,9 @@ minipro output. The panel page links to those commands rather than running them.
 STDLIB-ONLY. No pip, no internet, no non-stdlib imports.
 
 Usage:
-    python3 lock-panel.py                 # serve on 127.0.0.1:8765
+    python3 lock-panel.py                 # serve on 127.0.0.1:8765 + open browser
     python3 lock-panel.py --port 9000     # pick a port
+    python3 lock-panel.py --no-browser    # serve only, don't auto-open a browser
     python3 lock-panel.py --self-test     # render the page in-process, no socket
 """
 
@@ -39,8 +40,10 @@ import io
 import json
 import os
 import sys
+import threading
 import types
 import urllib.parse
+import webbrowser
 from contextlib import redirect_stdout
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -311,6 +314,22 @@ def run_self_test() -> int:
     return 0
 
 
+def _open_browser(url: str) -> None:
+    """Best-effort auto-open of the default browser to the panel URL.
+
+    Fired from a short-lived daemon timer just after the server starts accepting,
+    so the very first browser request lands on a listening socket. NEVER crashes
+    the panel: webbrowser.open returning False (headless, no DISPLAY, no browser
+    registered) or raising is treated as "couldn't auto-open" — the printed URL
+    and the CLI one-liners are still on screen for the attendee to use."""
+    try:
+        opened = webbrowser.open(url)
+    except Exception:
+        opened = False
+    if not opened:
+        print(f"  (couldn't auto-open a browser — open this URL yourself: {url})")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=(
@@ -324,6 +343,8 @@ def main():
                         help=f"localhost port to serve on (default {DEFAULT_PORT})")
     parser.add_argument("--self-test", action="store_true",
                         help="render + exercise the panel in-process and exit")
+    parser.add_argument("--no-browser", action="store_true",
+                        help="serve only; do not auto-open the default browser")
     args = parser.parse_args()
 
     if args.self_test:
@@ -347,6 +368,13 @@ def main():
     print("  Press Ctrl-C to stop. If the browser won't open, the same actions")
     print("  are one-liners:  python3 lock-tool.py read --all")
     print("=" * 72)
+    # Auto-open the default browser just after serve_forever() starts accepting,
+    # so the first request hits a listening socket. A short daemon timer keeps the
+    # open off the main thread and never blocks shutdown. --no-browser skips it.
+    if not args.no_browser:
+        opener = threading.Timer(0.5, _open_browser, args=(url,))
+        opener.daemon = True
+        opener.start()
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

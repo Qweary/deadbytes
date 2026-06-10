@@ -95,6 +95,9 @@ PERM_TO_ROLE_NAME = {
 
 DEVICE_NAME = decode_codes.DEVICE_NAME
 MINIPRO_BIN = decode_codes.MINIPRO_BIN
+# Retained for compatibility; no longer prefixes minipro. The installed uaccess
+# udev rule grants the logged-in user direct device access, so the live write
+# runs unprivileged.
 SUDO_BIN = decode_codes.SUDO_BIN
 DUMP_SIZE = build_injected.DUMP_SIZE
 MAX_SLOT = build_injected.MAX_SLOT
@@ -161,6 +164,22 @@ def resolve_role(role_arg: str | None) -> tuple[int, str]:
     return perm, PERM_TO_ROLE_NAME.get(perm, f"0x{perm:02X}")
 
 
+def occupied_slot_warning(source_bytes: bytes, slot: int) -> str | None:
+    """Return the occupied-slot warning string if `slot` is already active in
+    `source_bytes`, else None. Pure (no I/O) so the self-test can assert on the
+    exact message without capturing stdout. cmd_write calls this and prints the
+    result before the write; a None result means a normal additive add (no warn).
+    """
+    source_slots = decode_codes.parse_slots(source_bytes)
+    existing = next((s for s in source_slots if s["slot"] == slot), None)
+    if existing is not None and existing["active"]:
+        return (f"WARNING: slot {slot} is already occupied by code "
+                f"{existing['code']} ({existing['role']}) — your write OVERWRITES "
+                f"that slot. All other slots are preserved (this is an additive "
+                f"read-modify-write).")
+    return None
+
+
 def cmd_write(args) -> int:
     """WRITE control with a custom-value field.
 
@@ -197,6 +216,18 @@ def cmd_write(args) -> int:
     with open(src, "rb") as f:
         baseline = f.read()
     build_injected.validate_baseline(baseline, src)
+
+    # Occupied-slot pre-write notice. The default sample now ships the three
+    # workshop codes baked at slots 19/32/49, so an attendee who writes to one of
+    # those slots OVERWRITES a default code rather than adding a fresh one. If the
+    # target slot is already active in the SOURCE, surface a clear warning BEFORE
+    # the write result. This is informational only — it does not change the
+    # additive read-modify-write, the successful-write path, or the exit code; an
+    # empty target slot produces no warning (a normal additive add).
+    warn = occupied_slot_warning(baseline, slot)
+    if warn is not None:
+        print()
+        print(f"  {warn}")
 
     patches = [{
         "slot": slot,
@@ -275,7 +306,9 @@ def _flash_live(injected_path: str, code: str, slot: int,
             f"the SAFE path stops here. install.sh lands minipro at "
             f"/usr/local/bin/minipro on a station."
         )
-    cmd = [SUDO_BIN, MINIPRO_BIN, "-i", "-p", DEVICE_NAME, "-w", injected_path]
+    # No sudo: the uaccess udev rule grants the logged-in user direct device
+    # access, so minipro runs as the unprivileged attendee.
+    cmd = [MINIPRO_BIN, "-i", "-p", DEVICE_NAME, "-w", injected_path]
     print("=" * 72)
     print("  LIVE CHIP WRITE — advanced, confirmation gate")
     print("=" * 72)
@@ -364,6 +397,18 @@ def run_self_test() -> int:
     s0 = next(s for s in slots if s["slot"] == 0)
     check("untouched slot 0 still 123456", s0["code"] == "123456",
           f"(got {s0['code']!r})")
+
+    # Occupied-slot warning: slot 0 is active in `baseline`, so writing to it
+    # must emit the warning; an empty slot (25) must NOT. Assert on the pure
+    # helper so the contract holds without capturing cmd_write's stdout.
+    warn_occupied = occupied_slot_warning(baseline, 0)
+    check("occupied slot 0 emits warning",
+          warn_occupied is not None and "already occupied" in warn_occupied
+          and "123456" in warn_occupied,
+          f"(got {warn_occupied!r})")
+    check("empty slot 25 emits no warning",
+          occupied_slot_warning(baseline, 25) is None,
+          f"(got {occupied_slot_warning(baseline, 25)!r})")
 
     # Roll the bundled-tool self-tests in so a regression in either sibling also
     # fails lock-tool --self-test.

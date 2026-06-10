@@ -12,7 +12,8 @@ A ToorCamp 2026 conference package on exploiting the **Alarm Lock Trilogy T2/T3*
 If you are new here and want the quickest path:
 
 - **Watching the talk?** Open `talk/index.html` in any modern browser.
-- **Running or attending the workshop?** Start with `workshop/README.md`, then the participant handout.
+- **Attending the workshop?** Clone this repo and run one command from the repo root — `./bin/start.sh` (Windows: `start.ps1`). The browser opens to a local READ/WRITE control panel; no hardware, no setup, no `sudo`. The `workshop/PARTICIPANT-HANDOUT.md` card has the one command plus a CLI fallback.
+- **Running the workshop?** Start with `workshop/README.md`, then `workshop/FACILITATOR-GUIDE.md` for the staffed-station operations reference.
 
 ## Author / further reading
 

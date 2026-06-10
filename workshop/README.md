@@ -1,30 +1,41 @@
 # Workshop — Dead Bytes Tell No Lies
 
-The hands-on companion to the talk. Attendees clip a flash programmer onto a real Alarm Lock T2/T3's AT45DB041E DataFlash chip, decode the user-code page by hand, build an injected dump that adds their own codes, write it back, and watch the lock open with a code they just forged.
+The hands-on companion to the talk. Attendees decode the user-code page of an Alarm
+Lock T2/T3's AT45DB041E DataFlash chip, inject their own codes additively, and — on the
+opt-in live path — watch the lock open with a code they just forged.
 
-## Start here — reading order
+## Attendees — one command
 
-1. **`PARTICIPANT-HANDOUT.md`** — what an attendee follows at the bench. The 1-page hands-on flow.
-2. **`FACILITATOR-GUIDE.md`** — what a facilitator runs: station map, run-of-show, per-attendee flow, troubleshooting, and the pocket reference.
-3. **`kit/`** — the build kit that stands up a workshop station laptop (`make` targets, `install.sh`, the tools, and the baseline dump).
-4. **`kit/docs/DATAFLASH-DECODE-REFERENCE.md`** — the decode reference: the AT45DB041E page-0 layout, the offset map, and the packed-BCD / `0xB`-for-zero encoding rules.
+From the cloned repo root:
 
-## Self-service read/write tools
+```bash
+./bin/start.sh
+```
 
-Once the station is up, `~/workshop/tools/` holds the attendee read/write tooling, layered from a dead-simple bedrock up to convenience wrappers:
+The browser opens to a local READ/WRITE control panel. That's the whole workshop — no
+hardware, no setup, no `sudo`. (Windows: `start.ps1` from the repo root.) The
+**`PARTICIPANT-HANDOUT.md`** attendee card has the one command, a CLI fallback, and the
+short teaching essence. That handout plus the GUI is everything an attendee needs.
 
-- `lock-tool.py read --all` — decode and print the page-0 user-code table (the **READ**). No hardware needed; it works on a copy of the bundled sample dump.
-- `lock-tool.py write --code 246810 --slot 25 --role supervisor` — bake your own custom code into a copy and re-decode it so you see it land (the **WRITE**).
-- `lock-menu.py` — a plain-text menu over those same actions.
-- `lock-panel.py` — a localhost browser control panel: a READ button, a custom-value field, and a WRITE button.
+### CLI fallback (no browser)
 
-The menu and panel are thin wrappers; if either won't launch, the `lock-tool.py` one-liners still work and the wrappers print them. The live-chip read/write path is the advanced, confirmation-gated opt-in (`lock-tool.py ... --live`); everything defaults to the safe sample-dump-copy path.
+The same READ/WRITE run straight from the clone, from any directory, with no `sudo`:
+
+- `python3 workshop/kit/tools/lock-tool.py read --all` — decode all 50 slots (the
+  default source carries three baked-in codes, so you see real codes immediately).
+- `python3 workshop/kit/tools/lock-tool.py write --code 420420 --slot 32 --role elevated`
+  — bake your own code into a copy additively and re-decode it so you watch it land.
+- `python3 workshop/kit/tools/recover-baseline.py` — restore the code-free baseline.
+
+The live-chip path is the advanced, confirmation-gated opt-in (`lock-tool.py ... --live`,
+`sudo`-free via the bundled udev rule); everything defaults to the safe sample-dump-copy
+path.
 
 ---
 
 ## For organizers — building & standing up a station
 
-The rest of this README is facilitator-oriented: building and verifying the kit, standing up a station laptop, and editing the source docs. **A pure attendee does not need any of it** — clone the repo and follow `PARTICIPANT-HANDOUT.md`. This section is for whoever is provisioning the station hardware.
+The rest of this README is organizer-oriented: building and verifying the kit, standing up a station laptop, and editing the source docs. **A pure attendee does not need any of it** — clone the repo, run `./bin/start.sh`, and follow `PARTICIPANT-HANDOUT.md`. The full staffed-station operations reference — recovery, dump production, hardware counts, troubleshooting — lives in **`FACILITATOR-GUIDE.md`**; attendees never open it.
 
 ### Build and verify the kit
 
@@ -45,7 +56,7 @@ The kit is built and validated from `kit/`. Run these from the kit directory:
    make selftest
    ```
 
-   The run must end with `selftest RESULT: PASS` and `Checked: 18 files`.
+   The run must end with `selftest RESULT: PASS` and `Checked: 19 files`.
 
 3. (Optional) Build the distributable tarball. This produces a reproducible `facilitator-kit-toorcamp-2026.tar.gz` one level up, in `workshop/`.
 
@@ -65,7 +76,7 @@ cd facilitator-kit-toorcamp-2026
 sudo ./install.sh
 ```
 
-After `install.sh` completes, `minipro` is on `$PATH`, the T48 udev rules are installed, the invoking user is in the `plugdev` group (log out and back in for that to take effect), and `~/workshop/` holds the docs, the Python tools, and the canonical baseline dump. The installer exercises every Python tool's self-test as its final smoke gate and exits non-zero on any failure. See `kit/README.md` for the full stand-up walkthrough, the recovery workflow, and known limitations.
+After `install.sh` completes, `minipro` is on `$PATH` and the T48 udev rules are installed — including `61-minipro-uaccess.rules` (`TAG+="uaccess"`), which grants the logged-in user access to the programmer directly. There is **no** `plugdev`/`groupadd`/log-out-log-in dance: the live read/write path is `sudo`-free. Root is needed only for `install.sh` itself (the binary drop to `/usr/local/bin` and the udev rule install + reload). The installer exercises every Python tool's self-test as its final smoke gate and exits non-zero on any failure. See `kit/README.md` for the full stand-up walkthrough, the recovery workflow, and known limitations.
 
 #### One command from a fresh clone
 

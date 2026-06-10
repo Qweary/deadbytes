@@ -15,21 +15,22 @@ Every file shipped in `facilitator-kit-toorcamp-2026.tar.gz`. `selftest.sh` re-M
 | `README.md` | 8455 | `12d1660bb56bc10a9be5c103932fd348` | doc | kit overview + facilitator stand-up instructions |
 | `bin/minipro` | 455856 | `6b4a79297372baa92ddf495090f74f7d` | binary | minipro 0.7.4 (DavidGriffith fd6b56af) — Linux-AMD64 ELF |
 | `docs/DATAFLASH-DECODE-REFERENCE.md` | 20579 | `83dfd89650e7d02b73cf68dfd9e2fc6b` | doc | AT45DB041E dump format reference (page-0 layout, BCD-B encoding) |
-| `docs/FACILITATOR-GUIDE.md` | 39915 | `8ee54f8496e33de4c47839972f6a8aee` | doc | facilitator-facing workshop runbook (47KB) |
-| `docs/PARTICIPANT-HANDOUT.md` | 15815 | `f27dba8a2147730be111d508c44baf37` | doc | attendee-facing 1-page workshop handout |
-| `dumps/intact-lock-AT45DB041E-main-2026-05-20.bin` | 540672 | `eb6acff32ef13b29ac6ebed10d77316d` | dump | canonical intact-lock baseline (540,672 bytes, sensitive) |
+| `docs/FACILITATOR-GUIDE.md` | 42265 | `a19aac13aeae60e49dbf495e63c3e514` | doc | facilitator-facing workshop runbook (47KB) |
+| `docs/PARTICIPANT-HANDOUT.md` | 4278 | `77e919337eca1e3c40afe06206ce7dba` | doc | attendee-facing 1-page workshop handout |
+| `dumps/intact-lock-AT45DB041E-main-2026-05-20.bin` | 540672 | `eb6acff32ef13b29ac6ebed10d77316d` | dump | canonical intact-lock baseline (540,672 bytes, sensitive, workshop-internal) |
+| `dumps/workshop-sample-3codes-AT45DB041E-2026-05-20.bin` | 540672 | `741dcc79d9975b956d9e1c0a14de0e2b` | dump | teaching sample (540,672 bytes, sensitive, workshop-internal): canonical baseline + the 3 default workshop codes injected additively at slots 19/32/49; default READ source for the tools |
 | `etc/udev/rules.d/60-minipro.rules` | 1118 | `0a709dddd9992911d0b3c4767cbcd1c5` | udev | minipro USB-device tagging rule (TL866A/CS, TL866II+, T48, T56, T76) |
 | `etc/udev/rules.d/61-minipro-plugdev.rules` | 676 | `18dc04e64b15bbfbf878f982bfffa233` | udev | grants MODE=660 + GROUP=plugdev on tagged minipro devices |
 | `etc/udev/rules.d/61-minipro-uaccess.rules` | 663 | `b5e0a5a289e94b61345b5278c2d9b67a` | udev | tags minipro devices with TAG+=uaccess (logind seat access) |
-| `install.sh` | 14853 | `a61da212818a17ece592a68c72403327` | installer | one-command Kali stand-up entry point |
-| `selftest.sh` | 7912 | `dab5e94fce9f843fc2533f20f6b3bfe0` | validator | hardware-free kit-integrity check |
-| `tools/build-injected.py` | 8683 | `f001003873314851ac9d231a217bcdb4` | tool | builds injected.bin from baseline + canonical 3-slot patch |
-| `tools/decode-codes.py` | 17353 | `2d31fd6f30030005a60bf49a92c44bb1` | tool | reads + decodes the page-0 user-code table (the READ action; renders empty slots) |
+| `install.sh` | 14883 | `204f3fe63681a76272b6d878e0767dd5` | installer | one-command Kali stand-up entry point |
+| `selftest.sh` | 8927 | `94f39fbc2ff8529437a509a2523896ad` | validator | hardware-free kit-integrity check |
+| `tools/build-injected.py` | 8683 | `7b93fe3986fbbf05ff5f7104c821b342` | tool | builds injected.bin from baseline + canonical 3-slot patch |
+| `tools/decode-codes.py` | 18427 | `b6b33026f8e6a82de1841bf0ba83354d` | tool | reads + decodes the page-0 user-code table (the READ action; renders empty slots) |
 | `tools/lock-menu.py` | 5898 | `a73a4d107d7826852d5b6d61bd9add34` | tool | plain-text menu front-end wrapping lock-tool.py (thin convenience layer) |
-| `tools/lock-panel.py` | 14919 | `741ad690e93f362c017f314fa0434062` | tool | localhost browser control panel: READ button + custom-value field + WRITE button |
-| `tools/lock-tool.py` | 18450 | `a1ae96a935d8e294ea7aaa43ffc9101a` | tool | unified read/write CLI; bakes a custom code into a copy + re-decodes (W2/W3 bedrock) |
-| `tools/recover-baseline.py` | 23762 | `3184152f54b14dd2c08cc6d361ea2998` | tool | defensive wrapper around minipro -w; recovers a botched write |
+| `tools/lock-panel.py` | 16291 | `b7a3d162cba4fd48e4794b9b327ed02f` | tool | localhost browser control panel: READ button + custom-value field + WRITE button |
+| `tools/lock-tool.py` | 20948 | `6244b0468987f02a4eede1e3dc960501` | tool | unified read/write CLI; bakes a custom code into a copy + re-decodes (W2/W3 bedrock) |
+| `tools/recover-baseline.py` | 24055 | `d1aaa0568a6db8d27714928aba916d9d` | tool | defensive wrapper around minipro -w; recovers a botched write |
 
 ## Sensitive content
 
-`dumps/intact-lock-AT45DB041E-main-2026-05-20.bin` is a captured memory image of a real Alarm Lock T2/T3 unit. Treat as workshop-internal: do not redistribute outside facilitator chain-of-custody. See `dumps/MANIFEST.md` for the dump-specific sub-manifest and provenance chain.
+The two `dumps/*.bin` files derive from a captured memory image of a real Alarm Lock T2/T3 unit: `intact-lock-AT45DB041E-main-2026-05-20.bin` (the code-free canonical recovery baseline) and `workshop-sample-3codes-AT45DB041E-2026-05-20.bin` (the teaching sample — the baseline with the three default workshop codes injected additively, and the tools' default READ source). Treat both as workshop-internal: do not redistribute outside facilitator chain-of-custody. See `dumps/MANIFEST.md` for the dump-specific sub-manifest and provenance chain.

@@ -11,8 +11,10 @@ permission 0xFF) are rendered as empty rather than crashing or printing garbage.
 Two modes:
   - SAMPLE (default): decode the bundled sample dump. Operates on a COPY of the
     bundled baseline so the original is never touched. No hardware required.
-  - LIVE (--live, advanced opt-in): read the real chip via `sudo minipro ... -r`
+  - LIVE (--live, advanced opt-in): read the real chip via `minipro ... -r`
     first, then decode that fresh read. Guarded: a missing programmer fails loud.
+    No sudo: the installed uaccess udev rule grants the logged-in user direct
+    device access.
 
 STDLIB-ONLY. No pip, no internet, no non-stdlib imports. A fresh offline Kali
 laptop runs this with nothing but python3 + the bundled files.
@@ -72,11 +74,23 @@ PERM_NAMES = {
 # Bundled sample dump — resolved relative to this script so it works whether the
 # tool runs from workshop/src/ (dev) or ~/workshop/tools/ (station). The dump
 # lives in a sibling dumps/ directory in both layouts.
-SAMPLE_DUMP_NAME = "intact-lock-AT45DB041E-main-2026-05-20.bin"
-EXPECTED_SAMPLE_MD5 = "eb6acff32ef13b29ac6ebed10d77316d"
+#
+# This is the TEACHING SAMPLE, deliberately DISTINCT from the recovery baseline:
+# it is the canonical baseline with the three default workshop codes injected
+# additively at slots 19/32/49 (133769 Master / 420420 Elevated / 696969
+# Supervisor). The recovery baseline (intact-lock-...-main-2026-05-20.bin) stays
+# code-free so recover-baseline.py's MD5 gate is never corrupted; the tools READ
+# this sample by default, so decode shows the three teaching codes out of the box
+# and lock-tool's custom writes stack ON TOP of them.
+SAMPLE_DUMP_NAME = "workshop-sample-3codes-AT45DB041E-2026-05-20.bin"
+EXPECTED_SAMPLE_MD5 = "741dcc79d9975b956d9e1c0a14de0e2b"
 
 DEVICE_NAME = "AT45DB041E[Page264]@SOIC8"   # fully-qualified minipro device entry
 MINIPRO_BIN = "minipro"
+# No sudo for device access: the installed 61-minipro-uaccess.rules udev rule
+# (ENV{ID_MINIPRO}=="1", TAG+="uaccess") grants the logged-in user direct access
+# to the programmer, so minipro runs unprivileged. SUDO_BIN is retained only for
+# any code that still references it; it no longer prefixes the minipro call.
 SUDO_BIN = "sudo"
 
 
@@ -270,7 +284,9 @@ def read_live_chip() -> str:
         )
     tmpdir = tempfile.mkdtemp(prefix="decode-live-")
     out_path = os.path.join(tmpdir, "live-read.bin")
-    cmd = [SUDO_BIN, MINIPRO_BIN, "-i", "-p", DEVICE_NAME, "-r", out_path]
+    # No sudo: the uaccess udev rule grants the logged-in user direct device
+    # access, so minipro runs as the unprivileged attendee.
+    cmd = [MINIPRO_BIN, "-i", "-p", DEVICE_NAME, "-r", out_path]
     print()
     print("--- LIVE CHIP READ (advanced) ---")
     print(f"  $ {' '.join(cmd)}")
