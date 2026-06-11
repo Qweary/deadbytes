@@ -124,6 +124,38 @@ code -r <file>` and the live write is `minipro -i -p AT45DB041E[Page264]@SOIC8 -
 -w <file>`. The `-c code` scopes the operation to the chip's main-array `code` region,
 where the entire user-code table lives.
 
+**Working with your own dump.** Want to read a *different* lock, see what's on it,
+add codes, and write it back? The two raw `minipro` lines above bracket a four-step
+loop. Run the `python3` lines **from the repo root**:
+
+```bash
+# 1. READ your chip to a file (raw minipro, -c code scoping required on this T48)
+minipro -i -p AT45DB041E[Page264]@SOIC8 -c code -r mydump.bin
+
+# 2. DECODE what's on it — every slot, code + role
+python3 workshop/kit/tools/lock-tool.py read --dump mydump.bin --all
+
+# 3a. ADD the canonical 3 codes the EASY way — additive, preserves existing codes
+python3 workshop/kit/tools/build-injected.py mydump.bin myinjected.bin
+
+# 4. WRITE it back, then re-read + decode to verify it landed
+minipro -i -p AT45DB041E[Page264]@SOIC8 -c code -w myinjected.bin
+minipro -i -p AT45DB041E[Page264]@SOIC8 -c code -r verify.bin
+python3 workshop/kit/tools/lock-tool.py read --dump verify.bin --all
+```
+
+`build-injected.py` reads a 540,672-byte dump and writes a copy with the canonical
+3-slot patch (`133769`/Master/19, `420420`/Elevated/32, `696969`/Supervisor/49)
+applied **additively** — every other slot is preserved, so you only clobber a code
+if one of those three slots is already occupied.
+
+**3b. Hand-edit instead.** For full control, open `mydump.bin` in a hex editor
+(`xxd`, or ImHex if you want a GUI — same tools the live-hardware stations use) and
+write the packed-BCD code and permission bytes yourself. The exact page-0 offset
+map, the `0xB`-for-zero encoding, the active-flag offset, and the permission-byte
+table are all in the **decode reference** (`kit/docs/DATAFLASH-DECODE-REFERENCE.md`)
+— don't guess the offsets, read them there. Then write the file back with step 4.
+
 **No minipro installed?** This kit *bundles* a Linux x86-64 `minipro` binary, so a
 Kali/Linux laptop needs no download or compile. `sudo ./workshop/kit/install.sh`
 lands it on `PATH` plus the udev rules; the live tools also fall back to the bundled

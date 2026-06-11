@@ -17,7 +17,7 @@ Every file shipped in `facilitator-kit-toorcamp-2026.tar.gz`. `selftest.sh` re-M
 | `bin/minipro` | 455856 | `6b4a79297372baa92ddf495090f74f7d` | binary | minipro 0.7.4 (DavidGriffith fd6b56af) — Linux-AMD64 ELF, GPLv3 (see bin/MINIPRO-NOTICE.md) |
 | `docs/DATAFLASH-DECODE-REFERENCE.md` | 20579 | `83dfd89650e7d02b73cf68dfd9e2fc6b` | doc | AT45DB041E dump format reference (page-0 layout, BCD-B encoding) |
 | `docs/FACILITATOR-GUIDE.md` | 46185 | `cc60476675efd5675539c0d9152965f1` | doc | facilitator-facing workshop runbook (47KB) |
-| `docs/PARTICIPANT-HANDOUT.md` | 6537 | `a603dba27844feea273eb7121e5c48ee` | doc | attendee-facing 1-page workshop handout |
+| `docs/PARTICIPANT-HANDOUT.md` | 8251 | `013fcbfff4c043ff2b3873d347c49038` | doc | attendee-facing 1-page workshop handout |
 | `dumps/intact-lock-AT45DB041E-main-2026-05-20.bin` | 540672 | `eb6acff32ef13b29ac6ebed10d77316d` | dump | canonical intact-lock baseline (540,672 bytes, sensitive, workshop-internal) |
 | `dumps/workshop-sample-3codes-AT45DB041E-2026-05-20.bin` | 540672 | `741dcc79d9975b956d9e1c0a14de0e2b` | dump | teaching sample (540,672 bytes, sensitive, workshop-internal): canonical baseline + the 3 default workshop codes injected additively at slots 19/32/49; default READ source for the tools |
 | `etc/udev/rules.d/60-minipro.rules` | 1118 | `0a709dddd9992911d0b3c4767cbcd1c5` | udev | minipro USB-device tagging rule (TL866A/CS, TL866II+, T48, T56, T76) |
