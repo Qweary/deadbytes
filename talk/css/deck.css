@@ -72,6 +72,16 @@
   --gr-r:0 0 10px rgba(255,51,85,.50);
 }
 
+/* ---------- box-sizing reset ----------
+   reset.css / reveal.css ship NO global box-sizing, so the browser default
+   (content-box) applies. With content-box, the .slide's 100% width/height
+   PLUS its 64x72px padding overflow the 1920x1080 viewport (each slide
+   becomes 2064x1208), and every width:100% bordered box (.exhibit 2px frames,
+   .attack-list, .s7-layers, chain/cable/fix boxes) bleeds past the edge by
+   its border+padding. border-box folds padding+border INTO the declared
+   width/height, so nothing overflows while the thicker S7 frames are kept. */
+*,*::before,*::after{box-sizing:border-box}
+
 /* ---------- reveal.js overrides ---------- */
 html, body{
   background:var(--bg);
@@ -982,7 +992,17 @@ body.no-scanline::after{display:none}
 }
 .s19-note .amber{color:var(--amber)}
 
-/* ---------- S20 — Close ---------- */
+/* ---------- S19b / S20 — Resources + Close ---------- */
+.s19b-resources{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:36px;
+  max-width:1400px;
+  margin:auto;
+  width:100%;
+  height:100%;
+}
 .s20-close{
   display:flex;
   flex-direction:column;
@@ -1033,6 +1053,18 @@ body.no-scanline::after{display:none}
   font-size:20px;
   letter-spacing:2px;
   color:#8fc49b;
+}
+/* resources slide: the relocated close-resources panel runs large + airy as
+   its own standalone penultimate beat (it was dense type on the old close) */
+.s19b-resources .close-resources{
+  padding:36px 44px;
+  font-size:27px;
+  line-height:2.05;
+}
+.s19b-resources .close-resources .cr-url{
+  font-size:30px;
+  letter-spacing:2.5px;
+  margin-bottom:16px;
 }
 
 /* ---------- Back-pocket slide ---------- */
@@ -1219,9 +1251,16 @@ body.no-scanline::after{display:none}
   min-width:0;
 }
 .s13-demo .s13-evidence .exhibit img{max-height:300px}
-/* portrait demo video — sized as large as the firmware payoff slide allows;
+/* portrait demo video — capped so the whole .fw-right column (payload block +
+   video + figcaption + punchline) settles inside the 1080px viewport. The clip
+   is a 720x1280 portrait source, so a tall display both overflowed the bottom
+   AND upscaled the low-res poster into blur; a shorter cap fixes both.
    native <video> controls expose the fullscreen button (nothing overlays it) */
-.s13-demo .exhibit.exhibit-video video{max-height:760px}
+.s13-demo .exhibit.exhibit-video{align-self:start;max-height:430px}
+.s13-demo .exhibit.exhibit-video video{max-height:430px}
+/* payload block must not stretch to fill the column and shove the video down;
+   let it size to its content so the freed vertical budget goes to the fit */
+.s13-demo .fw-right .payload-block{flex:0 0 auto}
 /* video cue box rides beneath the video as a caption-style fallback line */
 .s13-demo .demo-callout{
   font-size:20px;
@@ -1354,21 +1393,48 @@ body.no-scanline::after{display:none}
   line-height:1.6;
 }
 
-/* ---------- S17 — thesis stays clean; one exhibit beside the declaration ---------- */
-.s17-systemic .s17-exhibit{
-  margin:0 auto;
-  max-width:600px;
-  width:100%;
-}
-.s17-systemic .s17-exhibit img{max-height:360px}
+/* ---------- S17 — thesis stays clean, stands alone (photo dropped) ---------- */
+/* (the former .s17-exhibit receipt photo was removed; the centered
+   declaration is the whole beat now — no exhibit rule needed) */
 
-/* ---------- S5 / S20 — single supporting exhibit ---------- */
+/* ---------- S5 — single supporting exhibit ---------- */
 .s5-exhibit{max-width:560px;width:100%;margin-top:6px}
 .s5-exhibit img{max-height:360px}
-.s20-exhibit{max-width:520px;width:100%}
-.s20-exhibit img{max-height:260px}
-/* close slide gets denser with the sign-off exhibit present */
-.s20-close{gap:24px}
+
+/* ---------- S20 — picture-dominant close ----------
+   The thermal-receipt receipt is the hero: it gets the dominant left column
+   and runs tall; the minimal words (couplet, setup, verbatim punchline,
+   handle) sit in a slim right column. close-resources moved to S19b. */
+.s20-close{
+  flex-direction:row;
+  align-items:center;
+  gap:48px;
+  max-width:1700px;
+  margin:auto;
+  width:100%;
+  height:100%;
+}
+.s20-exhibit{
+  flex:1.25 1 0;
+  min-width:0;
+  align-self:center;
+  max-height:880px;
+}
+.s20-exhibit img{max-height:880px}
+.s20-words{
+  flex:1 1 0;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:30px;
+}
+.s20-words .s20-setup{
+  font-family:'Share Tech Mono',monospace;
+  font-size:22px;
+  letter-spacing:1.5px;
+  color:var(--gr);
+  line-height:1.8;
+}
 
 /* ---------- Operator HUD ---------- */
 #hud{

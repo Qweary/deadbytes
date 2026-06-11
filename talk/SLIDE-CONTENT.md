@@ -330,7 +330,7 @@ Pair:
 **Type**: content (thesis)
 **Anchor**: SYSTEMIC PROBLEM
 **Clock window**: 45:00–46:00
-**Visual**: Single large declaration, centered, with supporting text below. The declaration stays the beat — clean and uncrowded — with one small red exhibit (img 16, the thermal receipt) anchored below the sub line, tying the thesis back to the mechanism shown on S16b.
+**Visual**: Single large declaration, centered, with supporting text below. The declaration stands alone — clean and uncrowded, no exhibit. The receipt mechanism was already shown on S16b/S16c; here the thesis is the whole beat and carries no image.
 
 Large (Orbitron, green):
 `A LOCK THAT CONTROLS ACCESS`
@@ -345,7 +345,7 @@ Smaller, muted, below:
 `actor = chronicler · manipulate one → manipulate both`
 `self-auditing endpoint — not specific to this lock`
 
-**Media**: img 16 (the thermal receipt) — one small red exhibit below the sub. Same file as the S16b proof shot and the S20 sign-off; here it sits quietly under the thesis as the single piece of evidence behind "writes their own alibi." Do not crowd the declaration; the image is a footnote to the beat, not a co-star.
+**Media**: none. The thesis declaration stands photo-free. The thermal receipt does its work on S16b (the mechanism proof) and returns on S20 (the sign-off); S17 stays a pure-text declaration so nothing competes with the line.
 
 ---
 
@@ -375,7 +375,7 @@ Bottom callout: `cheap to implement. doesn't require replacing the lock.`
 ## S19 — The $5 Fix
 **Type**: content (mitigations)
 **Anchor**: $5 FIX
-**Clock window**: 47:30–49:00
+**Clock window**: 47:30–48:30
 **Visual**: Terminal table / box structure, four rows:
 
 ```
@@ -397,29 +397,43 @@ Bottom callout (amber, muted): `the company knew about the remote wire attack. d
 
 ---
 
+## S19b — Resources (take this home)
+**Type**: content (resources)
+**Anchor**: RESOURCES · take this home
+**Clock window**: 48:30–49:15
+**Visual**: Single resource block. A lead line carries the through-line couplet (relocated from the old S20 so the close can become picture-only), a one-line invitation, then the repo/writeups URL and the materials manifest.
+
+```
+locks are computers now. computers live in walls.
+everything i found is public — take it home and check your own.
+
+code: github.com/qweary · writeups: qweary.github.io
+  code · firmware dumps · SOP8 clip wiring · FaceDancer scripts · pcap files
+  33 pages of handwritten notes — including all the wrong turns
+  blog series: five parts · July–August 2025
+```
+
+**Media**: none. Scannable text block; this is the "take it home" beat, deliberately placed before the close so the final slide carries only the receipt and the punchline.
+**Speaker cue**: "everything I found is public. If you want to replicate any of this — it's all there. Code, dumps, the wiring, the scripts, the pcaps. 33 pages of notes, including all the wrong turns. Five-part blog." Don't dwell — the couplet ("locks are computers now. computers live in walls.") is the runway into the close; land it, then [CLICK] to S20.
+
+---
+
 ## S20 — Close
 **Type**: close
 **Anchor**: CLOSE
-**Clock window**: 49:00–50:00
-**Visual**: Two sections.
+**Clock window**: 49:15–50:00
+**Visual**: Picture-dominant. The `HACK THE PLANET` thermal receipt is the hero — large, the whole left of the slide. A slim right column carries only the closing text: a single setup line, the verbatim punchline, and the handle. The couplet moved to S19b; the close is now photo + setup + punchline + handle, nothing else.
 
-Top section — resources:
-```
-code: github.com/qweary · writeups: qweary.github.io
-  code · firmware dumps · SOP8 wiring · FaceDancer scripts · pcaps
-  33 pages of handwritten notes (including the wrong turns)
-  blog: five parts, July–August 2025
-```
-
-Below rule, the closing argument in descending size:
-`locks are computers now.`
-`computers live in walls.`
+Right column (in order):
+`verify your own physical endpoints. and if your vendor tells you they're not worried about it —`
 
 Then the verbatim punchline (large, terminal-green glow):
 `"— maybe you should be."`
 
-Then a small red sign-off exhibit (img 16, the thermal receipt), then: `Qweary · workshop: June 27 · 17:30 · Yoga Studio`.
-**Media**: img 16 — the `HACK THE PLANET` receipt as the closing flourish (third and final use of this file: S16b proof → S17 footnote → S20 sign-off). The lock printed it; so can the room. Kept small so the punchline stays the last big beat.
+Then the handle line:
+`Qweary · workshop: June 27 · 17:30 · Yoga Studio · questions welcome`
+
+**Media**: img 16 — the `HACK THE PLANET` receipt, now the hero of the close (second and final use of this file: S16b proof → S20 hero; S17 no longer carries it). The lock printed it; so can the room. The picture dominates; the punchline is the only large text beside it.
 
 ---
 

@@ -397,7 +397,7 @@
 
 ## The Systemic Problem [45:00–46:00]
 
-[CLICK — self-auditing endpoint slide; the thermal receipt sits small beneath the declaration]
+[CLICK — self-auditing endpoint slide; declaration stands alone, no image — the receipt already did its work on S16b/S16c]
 
 - "I want to step back from the specific lock."
 - "Because this is the argument I actually want to make."
@@ -431,7 +431,7 @@
 
 ---
 
-## The $5 Fix [47:30–49:00]
+## The $5 Fix [47:30–48:30]
 
 [CLICK — mitigations slide]
 
@@ -457,15 +457,15 @@
 
 ---
 
-## Close [49:00–50:00]
+## Resources — Take This Home [48:30–49:15]
 
-[CLICK — "Everything is Published" slide or resources slide]
+[CLICK — S19b resources slide]
 
 - "Everything I found is public."
 - GitHub repo: code, firmware dumps, SOP8 clip wiring, FaceDancer scripts, pcap files
 - 33 pages of handwritten notes — including all the wrong turns
 - Five-part blog series, July–August 2025
-- "If you want to replicate any of this: it's all there."
+- "If you want to replicate any of this: it's all there. Take it home and check your own."
 
 [PAUSE]
 
@@ -474,7 +474,19 @@
 - "The locksmith saw wires that shouldn't be cut. The locksmith knew what a factory reset meant mechanically. The locksmith knew the volume of these units in the field — because the locksmith installed them."
 - "The digital researcher might have found the JTAG. Might have found the NAND layout. Might not have thought to ask about the remote release wires."
 - "The intersection of physical and digital security isn't coming. It's here. It's been here."
-- "Locks are computers now. Computers live in walls."
+- "Locks are computers now. Computers live in walls." — this couplet lives on the S19b slide; land it as the runway into the close, then [CLICK] to S20.
+
+[PAUSE]
+
+[CLICK — S20]
+
+---
+
+## Close [49:15–50:00]
+
+[CLICK — S20: picture-dominant close. The HACK THE PLANET receipt is the hero; a slim right column carries only the setup line, the punchline, and the handle.]
+
+- The receipt the lock printed is the hero of this slide now — large, the whole left. "The lock printed that. So can you. It's in the repo." Let the picture carry the weight; the only big text beside it is the punchline.
 
 [PAUSE]
 
@@ -486,9 +498,6 @@
 
 [PAUSE — hold it]
 
-[CLICK — final slide: handle + repo URL + the HACK THE PLANET receipt as the sign-off image]
-
-- [The receipt the lock printed is the last exhibit on screen — small, beneath the punchline. "The lock printed that. So can you. It's in the repo." Optional; the punchline is still the last big beat.]
 - "I'm Qweary. Workshop is June 27 at 17:30 in the Yoga Studio if you want to get hands-on with a flash programmer."
 - "Questions? I'll be here after."
 
@@ -547,6 +556,7 @@ Use these if the room goes quiet after first question:
 | The Audit Events Are Modifiable (S16c) | 44:00–45:00 | 1 min; two Ghidra audit shots; runway into the thesis |
 | Systemic Problem | 45:00–46:00 | The argument; the "alibi" thesis lands here, clean |
 | Observer System Model | 46:00–47:30 | The cheap fix; independent sensors corroborate |
-| $5 Fix | 47:30–49:00 | Mitigations; don't rush the list |
-| Close | 49:00–50:00 | The punchline, then done |
+| $5 Fix | 47:30–48:30 | Mitigations; don't rush the list |
+| Resources — Take This Home (S19b) | 48:30–49:15 | Repo, notes, blog; couplet is the runway into the close |
+| Close (S20) | 49:15–50:00 | Picture-dominant: receipt hero + the punchline, then done |
 | Q&A | 50:00+ | Use seeds if needed |
