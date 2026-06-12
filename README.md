@@ -12,7 +12,7 @@ A ToorCamp 2026 conference package on exploiting the **Alarm Lock Trilogy T2/T3*
 If you are new here and want the quickest path:
 
 - **Watching the talk?** Open `talk/index.html` in any modern browser.
-- **Attending the workshop?** Clone this repo and run one command from the repo root — `./bin/start.sh` (Windows: `start.ps1`). The browser opens to a local READ/WRITE control panel in Practice mode (sample copy, no hardware); a Live-lock tab drives the real chip behind an in-browser confirmation. No setup, no `sudo` — the kit even bundles a Linux `minipro` so a station laptop needs nothing installed. The `workshop/PARTICIPANT-HANDOUT.md` card has the one command plus a CLI fallback (`python3 workshop/kit/tools/lock-tool.py read --all` from the repo root).
+- **Attending the workshop?** Clone this repo and run one command from the repo root — `./bin/start.sh` (Windows: `start.ps1`). The browser opens to a local READ/WRITE control panel in Practice mode (sample copy, no hardware); a Live-lock tab drives the real chip behind an in-browser confirmation. No setup, no `sudo` — the kit even bundles a Linux `minipro` **and its device database** (`workshop/kit/share/minipro/`), found automatically via `workshop/kit/bin/minipro-env.sh`, so a station laptop needs nothing installed and resolves chip profiles out of the box. The `workshop/PARTICIPANT-HANDOUT.md` card has the one command plus a CLI fallback (`python3 workshop/kit/tools/lock-tool.py read --all` from the repo root).
 - **Running the workshop?** Start with `workshop/README.md`, then `workshop/FACILITATOR-GUIDE.md` for the staffed-station operations reference.
 
 ## Author / further reading

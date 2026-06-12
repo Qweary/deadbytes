@@ -74,7 +74,7 @@ The AT45DB041E on each lock board ships under conformal-coating resin that the S
 - [ ] **4× Xgecu T48 programmers** — from the procurement run; serial numbers logged
 - [ ] **4× SOIC-8 clips** — 1.27 mm pitch, 8-pin, with the ZIF ICSP adapter that connects clip-flying-leads to the T48's ICSP header
 - [ ] **1–2× sets of individual long clips + breakout leads** (operator kit, NOT a per-station item) — ad-hoc-only fallback a facilitator may reach for if a specific board geometry defeats the SOIC-8 clip. **Not a standard station method; do not put it in front of attendees as a documented procedure.** The SOIC-8 clip is the per-station method.
-- [ ] **4× Kali laptops** — the cloned repo present; `minipro` 0.7.4 installed via the kit's `sudo ./workshop/kit/install.sh` (from the repo root). **No download or compile needed: the kit BUNDLES a Linux x86-64 `minipro` 0.7.4 at `workshop/kit/bin/minipro`** (GPLv3 — attribution at `workshop/kit/bin/MINIPRO-NOTICE.md`, upstream `gitlab.com/DavidGriffith/minipro`); `install.sh` drops it on `$PATH` and installs the udev rules — including `61-minipro-uaccess.rules` — in `/etc/udev/rules.d/`. The live tools also fall back to the bundled binary if `PATH` `minipro` is absent. The live read/write is `sudo`-free via the uaccess rule (no `plugdev` group, no log-out/log-in). The workshop-distribution dump (`intact-lock-AT45DB041E-main-2026-05-20-workshop.bin`) and the injected-codes construction script (`build-injected.py` — see §"Workshop-Distribution Dump Production" below) staged at `workshop/kit/tools/` in the clone
+- [ ] **4× Kali laptops** — the cloned repo present; `minipro` 0.7.4 installed via the kit's `sudo ./workshop/kit/install.sh` (from the repo root). **No download or compile needed: the kit BUNDLES a Linux x86-64 `minipro` 0.7.4 at `workshop/kit/bin/minipro`** (GPLv3 — attribution at `workshop/kit/bin/MINIPRO-NOTICE.md`, upstream `gitlab.com/DavidGriffith/minipro`); `install.sh` drops it on `$PATH` and installs the udev rules — including `61-minipro-uaccess.rules` — in `/etc/udev/rules.d/`. The live tools also fall back to the bundled binary if `PATH` `minipro` is absent. The live read/write is `sudo`-free via the uaccess rule (no `plugdev` group, no log-out/log-in). **The kit also bundles its own minipro device database** (`workshop/kit/share/minipro/{infoic.xml,logicic.xml}`) and finds it with zero setup via `workshop/kit/bin/minipro-env.sh` (sourced on the tool path and before any raw `minipro` command) — a clean station needs no system-installed minipro DB. **Version-pin (drift rule):** the two XML are pinned to the bundled binary's commit (`fd6b56af`); if you ever rebuild `bin/minipro`, re-bundle both XML from the SAME commit, then re-run `make assemble && make selftest` — `selftest.sh` Phase 3 fails loud if the DB drifts from the pinned MD5s or stops resolving. The workshop-distribution dump (`intact-lock-AT45DB041E-main-2026-05-20-workshop.bin`) and the injected-codes construction script (`build-injected.py` — see §"Workshop-Distribution Dump Production" below) staged at `workshop/kit/tools/` in the clone
 - [ ] **2× spare T48s** — hot-swap if a programmer flakes
 - [ ] **6× spare SOIC-8 clips** — they fail mechanically; 1.5 per station of spare is the right ratio
 - [ ] **8× spare AT45DB041E baseline dumps** — `intact-lock-AT45DB041E-main-2026-05-20.bin` on a USB stick at each station, for recovery writes (§"Recovery — write the baseline back")
@@ -290,13 +290,14 @@ This is the **live-hardware** path, for an attendee who wants to do it on a real
 
 **Step 3 — Read the chip (3 min)**
 
-At the laptop, from the repo root (the raw `minipro` read; `lock-tool.py read --all --live` wraps this same operation). It is `sudo`-free via the uaccess udev rule:
+At the laptop, from the repo root (the raw `minipro` read; `lock-tool.py read --all --live` wraps this same operation). It is `sudo`-free via the uaccess udev rule. **Source the kit's env snippet first** so the bundled device database is found — the kit ships its own minipro device DB (`share/minipro/{infoic.xml,logicic.xml}`) and `minipro-env.sh` points `MINIPRO_HOME` at it, so a clean station needs no system-installed minipro DB:
 
 ```bash
-minipro -i -p 'AT45DB041E[Page264]@SOIC8' -c code -r my-dump.bin
+source workshop/kit/bin/minipro-env.sh && minipro -p AT45DB041E[Page264]@SOIC8 -c code -r out.bin
 ```
 
-- The `-i` flag suppresses some interactive prompts; the device name `AT45DB041E[Page264]@SOIC8` is the canonical minipro identifier for the 264-byte-page DataFlash in its SOIC-8 package
+- The shipped self-service tools already inject this env automatically, so you only need to `source` the snippet when you type a raw `minipro` command by hand. If you skip it on a station with no system DB, minipro can't load the chip profile and prints a *misleading* "reclip"-style error even though the clip is fine — sourcing the snippet is the fix, not re-clipping
+- The `-i` flag (shown in the read/write/verify variants below) suppresses some interactive prompts; the device name `AT45DB041E[Page264]@SOIC8` is the canonical minipro identifier for the 264-byte-page DataFlash in its SOIC-8 package
 - **`-c code` scopes the read to the chip's `code` main-array region** — the region that holds the entire user-code table. This is deliberate and load-bearing on this workshop's T48 (firmware 00.1.34): a full unscoped read times out on the chip's user-id signature section. See §"`-c code` region scoping (T48 user-id timeout)" in Troubleshooting for the full rationale — the shipped tools all pass `-c code`, so the advertised command equals the run command
 - minipro will print a firmware-version warning. **The warning is non-blocking** — let it scroll past
 - If chip-ID returns `0x0000`, re-seat the clip (§"If the clip won't bite") and run again. Do **not** add `-y` unless you have already re-clipped twice — `-y` bypasses the chip-ID check and can mask a wiring problem
@@ -566,7 +567,10 @@ Tear this out and put it in your back pocket. Everything you need to drive a pro
 
 ### The live commands (raw minipro under the hood; `lock-tool.py ... --live` wraps them)
 
+Source the kit's device-DB env once per shell before any raw `minipro` call (the shipped tools do this for you). The kit bundles its own minipro device DB, so a clean station finds the chip profile with zero setup — no system-installed minipro DB required:
+
 ```
+Env:     source workshop/kit/bin/minipro-env.sh   # once per shell; sets MINIPRO_HOME -> bundled DB
 Read:    minipro -i -p 'AT45DB041E[Page264]@SOIC8' -c code -r my-dump.bin
 Build:   python3 workshop/kit/tools/build-injected.py my-dump.bin injected.bin
 Write:   minipro -i -p 'AT45DB041E[Page264]@SOIC8' -c code -w injected.bin

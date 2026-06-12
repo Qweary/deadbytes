@@ -24,6 +24,13 @@ $RepoRoot = $PSScriptRoot
 $ToolsDir = Join-Path $RepoRoot 'workshop\kit\tools'
 $Panel    = Join-Path $ToolsDir 'lock-panel.py'
 
+# No MINIPRO_HOME here by design. The bundled minipro device-database lookup
+# (MINIPRO_HOME -> kit\share\minipro) only matters when the bundled minipro
+# binary actually runs, and that binary is a Linux ELF — Windows is the
+# no-hardware lane (see the header). The live/minipro path never executes on
+# Windows, so MINIPRO_HOME would be inert; the Linux launcher (bin/start.sh) and
+# the Python CLI path set it where it is needed.
+
 function Write-Fallback {
     Write-Host ''
     Write-Host '----------------------------------------------------------------------'

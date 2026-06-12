@@ -33,6 +33,9 @@ role_for() {
         MANIFEST.md)                                  echo "manifest|this file — top-level kit manifest" ;;
         bin/minipro)                                  echo "binary|minipro 0.7.4 (DavidGriffith fd6b56af) — Linux-AMD64 ELF, GPLv3 (see bin/MINIPRO-NOTICE.md)" ;;
         bin/MINIPRO-NOTICE.md)                        echo "license|GPLv3 attribution + source-availability notice for the bundled minipro binary (DavidGriffith 0.7.4 / fd6b56af)" ;;
+        bin/minipro-env.sh)                           echo "env|sourced snippet that sets MINIPRO_HOME to the kit's bundled share/minipro device DB (absolute, path-relative to this snippet); sourced by bin/start.sh and by the documented raw-minipro live command" ;;
+        share/minipro/infoic.xml)                     echo "device-db|minipro chip-profile database (programmable devices); version-pinned to bin/minipro commit fd6b56af — re-bundle from the SAME commit on any binary rebuild (drift rule); found at runtime via MINIPRO_HOME (bin/minipro-env.sh)" ;;
+        share/minipro/logicic.xml)                    echo "device-db|minipro logic-IC profile database; version-pinned to bin/minipro commit fd6b56af — re-bundle from the SAME commit on any binary rebuild (drift rule); found at runtime via MINIPRO_HOME (bin/minipro-env.sh)" ;;
         etc/udev/rules.d/60-minipro.rules)            echo "udev|minipro USB-device tagging rule (TL866A/CS, TL866II+, T48, T56, T76)" ;;
         etc/udev/rules.d/61-minipro-plugdev.rules)    echo "udev|grants MODE=660 + GROUP=plugdev on tagged minipro devices" ;;
         etc/udev/rules.d/61-minipro-uaccess.rules)    echo "udev|tags minipro devices with TAG+=uaccess (logind seat access)" ;;

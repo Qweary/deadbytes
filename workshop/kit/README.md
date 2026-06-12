@@ -17,6 +17,11 @@ sudo ./install.sh
 That's it. After `install.sh` completes:
 
 - `minipro` is on `$PATH` at `/usr/local/bin/minipro`
+- the kit ships its own minipro **device database** (`share/minipro/{infoic.xml,logicic.xml}`) and finds it with zero setup — `bin/minipro-env.sh` points `MINIPRO_HOME` at the bundled DB, so a clean station resolves chip profiles without any system-installed minipro DB. The shipped tools source it automatically; before a raw manual `minipro` command, source it first:
+  ```
+  source workshop/kit/bin/minipro-env.sh && minipro -p AT45DB041E[Page264]@SOIC8 -c code -r out.bin
+  ```
+  The two XML are version-pinned to the binary's commit (`fd6b56af`); on any binary rebuild, re-bundle both from the same commit (`selftest.sh` Phase 3 enforces this).
 - T48 udev rules are installed so non-root users in the `plugdev` group can access the programmer
 - Your invoking user (`$SUDO_USER`) has been added to `plugdev` (must log out + back in for the group change to take effect on existing shells)
 - `~/workshop/` is populated with:
@@ -56,7 +61,12 @@ facilitator-kit/
 ├── selftest.sh                        hardware-free integrity check
 ├── MANIFEST.md                        every kit file + size + MD5 + role
 ├── bin/
-│   └── minipro                        minipro 0.7.4 (Linux-AMD64 ELF)
+│   ├── minipro                        minipro 0.7.4 (Linux-AMD64 ELF)
+│   ├── minipro-env.sh                 sets MINIPRO_HOME -> bundled device DB
+│   └── MINIPRO-NOTICE.md              GPLv3 attribution for the binary
+├── share/minipro/
+│   ├── infoic.xml                     bundled device DB (chip profiles)
+│   └── logicic.xml                    bundled device DB (logic ICs)
 ├── etc/udev/rules.d/
 │   ├── 60-minipro.rules               USB vendor:product tagging
 │   ├── 61-minipro-plugdev.rules       MODE=660 GROUP=plugdev

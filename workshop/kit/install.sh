@@ -220,7 +220,7 @@ step_install_udev() {
         fail "install-udev" "kit udev source directory not found: ${src_dir}"
     fi
 
-    for rule in 60-minipro.rules 61-minipro-plugdev.rules 61-minipro-uaccess.rules 50-t48.rules; do
+    for rule in 60-minipro.rules 61-minipro-plugdev.rules 61-minipro-uaccess.rules; do
         if [ -f "${src_dir}/${rule}" ]; then
             install -m 644 -o root -g root "${src_dir}/${rule}" "${dst_dir}/${rule}"
             info "installed ${dst_dir}/${rule}"

@@ -186,6 +186,102 @@ else
 fi
 
 # -----------------------------------------------------------------------------
+# Phase 3: bundled minipro device-database (share/minipro/*.xml).
+#
+# The kit ships its own version-matched minipro device DB so a clean attendee
+# machine resolves chip profiles with zero setup. Two guards:
+#   (a) version-match guard — the two XML are present and their MD5s equal the
+#       values pinned to the bundled binary's commit (fd6b56af). A mismatch here
+#       means the DB drifted from the binary (the version-pin/drift rule) — the
+#       kit MUST re-bundle both XML from the SAME commit on any binary rebuild.
+#   (b) clean-env DB-resolution proof — a hardware-free DIFFERENTIAL: point
+#       MINIPRO_HOME at the bundled share dir vs. an empty tmp dir, from a
+#       SCRUBBED cwd (no stray ./logicic.xml — minipro checks cwd BEFORE
+#       MINIPRO_HOME), and assert the bundled case yields the device profile
+#       while the empty case yields the DB-missing error. The differential is
+#       the proof and it needs no T48.
+#
+# CRITICAL: minipro's exit code is NOT a health signal — `minipro -L <device>`
+# prints the DB-missing error but still exits 0. Every assertion below is on
+# STDOUT/STDERR CONTENT, never on $? alone.
+# -----------------------------------------------------------------------------
+echo
+echo "==> Phase 3: bundled minipro device database (share/minipro)"
+echo
+
+# Pinned to bin/minipro commit fd6b56af. Re-pin (and re-bundle the XML from the
+# SAME commit) on any binary rebuild — see MANIFEST.md device-db rows.
+PINNED_INFOIC_MD5="81e41770ff5ccde8da9344cc91894159"
+PINNED_LOGICIC_MD5="54e0c050e5f2e0e9b7d2179de5ec7be8"
+SHARE_DIR="${KIT_DIR}/share/minipro"
+MINIPRO_BIN="${KIT_DIR}/bin/minipro"
+# DB-only lookup target: a device whose profile lives in infoic.xml. minipro -L
+# lists matching devices from the DB with no chip attached and no programmer.
+PROBE_DEVICE="AT45DB041E"
+
+# (a) version-match guard — present + pinned MD5.
+for xml_pin in "infoic.xml:${PINNED_INFOIC_MD5}" "logicic.xml:${PINNED_LOGICIC_MD5}"; do
+    xml="${xml_pin%%:*}"
+    pin="${xml_pin#*:}"
+    xml_path="${SHARE_DIR}/${xml}"
+    if [ ! -f "$xml_path" ]; then
+        note_fail "share/minipro/${xml} missing"
+        echo "    FAIL: share/minipro/${xml} not present — kit DB is not self-contained"
+        continue
+    fi
+    got_md5=$(md5sum "$xml_path" | awk '{print $1}')
+    if [ "$got_md5" = "$pin" ]; then
+        echo "    PASS: share/minipro/${xml} present + matches pinned MD5 (${pin})"
+    else
+        note_fail "share/minipro/${xml} MD5 drift expected=${pin} got=${got_md5}"
+        echo "    FAIL: share/minipro/${xml} MD5 drift (expected ${pin}, got ${got_md5})"
+        echo "          The device DB has drifted from binary commit fd6b56af — re-bundle"
+        echo "          both XML from the SAME commit (the version-pin/drift rule)."
+    fi
+done
+
+# (b) clean-env DB-resolution differential. Hardware-free, stdout-asserted.
+if [ ! -x "$MINIPRO_BIN" ]; then
+    note_fail "bin/minipro not executable — cannot run DB-resolution proof"
+    echo "    FAIL: bin/minipro not present/executable; skipping DB-resolution differential"
+else
+    # Scrubbed cwd with NO stray XML — minipro reads a bare ./logicic.xml BEFORE
+    # $MINIPRO_HOME, so the differential is only honest from a clean dir.
+    _scrub_cwd="$(mktemp -d)"
+    _empty_home="$(mktemp -d)"
+    # Bundled-DB branch: MINIPRO_HOME -> bundled share. Expect the device profile.
+    bundled_out="$(cd "$_scrub_cwd" && MINIPRO_HOME="$SHARE_DIR" "$MINIPRO_BIN" -L "$PROBE_DEVICE" 2>&1)"
+    # Empty-DB branch: MINIPRO_HOME -> empty tmp. Expect the DB-missing error
+    # (and NOT the device profile). This is the teeth of the test — it MUST fail
+    # to resolve when the DB is absent, or the bundled branch proves nothing.
+    empty_out="$(cd "$_scrub_cwd" && MINIPRO_HOME="$_empty_home" "$MINIPRO_BIN" -L "$PROBE_DEVICE" 2>&1)"
+    rm -rf "$_scrub_cwd" "$_empty_home"
+
+    # Assert on CONTENT, never on $?. Bundled branch: device name surfaces in the
+    # device-list output. Empty branch: device name does NOT surface (the DB is
+    # gone), and the DB-missing diagnostic ("No such file" / "infoic"/"logicic")
+    # does.
+    bundled_resolves=0
+    echo "$bundled_out" | grep -qi "$PROBE_DEVICE" && bundled_resolves=1
+    empty_resolves=0
+    echo "$empty_out" | grep -qi "$PROBE_DEVICE" && empty_resolves=1
+
+    if [ "$bundled_resolves" -eq 1 ] && [ "$empty_resolves" -eq 0 ]; then
+        echo "    PASS: clean-env DB-resolution differential — bundled DB resolves '${PROBE_DEVICE}', empty DB does not"
+    else
+        note_fail "DB-resolution differential failed (bundled_resolves=${bundled_resolves} empty_resolves=${empty_resolves})"
+        echo "    FAIL: clean-env DB-resolution differential"
+        echo "          bundled-DB branch resolved '${PROBE_DEVICE}': $( [ "$bundled_resolves" -eq 1 ] && echo yes || echo NO )"
+        echo "          empty-DB  branch resolved '${PROBE_DEVICE}': $( [ "$empty_resolves" -eq 0 ] && echo no || echo YES-LEAK )"
+        echo "    --- bundled-DB branch output ---"
+        echo "$bundled_out" | sed 's/^/    /'
+        echo "    --- empty-DB branch output ---"
+        echo "$empty_out" | sed 's/^/    /'
+        echo "    --- end output ---"
+    fi
+fi
+
+# -----------------------------------------------------------------------------
 # Final report
 # -----------------------------------------------------------------------------
 echo

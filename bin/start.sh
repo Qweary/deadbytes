@@ -32,6 +32,24 @@ BUNDLED_MINIPRO="${REPO_ROOT}/workshop/kit/bin/minipro"
 INSTALL_HELPER="${REPO_ROOT}/workshop/kit/install.sh"
 
 # ---------------------------------------------------------------------------
+# Point the bundled minipro at its BUNDLED device database. On a clean machine
+# the bundled binary's compiled DB path (/usr/local/share/minipro) does not
+# exist, so chip profiling fails with a misleading "reclip" error. Sourcing the
+# kit's minipro-env.sh exports an ABSOLUTE MINIPRO_HOME at the bundled share dir
+# (REPLACE, not fallback — see that file) so the GUI path's child python (and the
+# minipro it spawns) inherit it. The snippet is path-relative, only sets the var
+# if the attendee has not already set their own, and no-ops if the share dir is
+# absent — so this never fails the launch. The Python CLI/--live path injects the
+# same value independently (decode-codes.py minipro_env()); it does NOT rely on
+# this having run.
+# ---------------------------------------------------------------------------
+MINIPRO_ENV_SNIPPET="${REPO_ROOT}/workshop/kit/bin/minipro-env.sh"
+if [ -f "$MINIPRO_ENV_SNIPPET" ]; then
+    # shellcheck source=/dev/null
+    . "$MINIPRO_ENV_SNIPPET"
+fi
+
+# ---------------------------------------------------------------------------
 # Hardware-readiness note. The browser panel is the no-hardware default and
 # needs NO minipro. But the panel ALSO offers an advanced "live chip" path that
 # drives a real T48 over minipro, so surface — informationally, never fatally —
