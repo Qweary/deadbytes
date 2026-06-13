@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dead Bytes Tell No Lies — Workshop — ToorCamp 2026</title>
+
+<!--
+  WORKSHOP deck for "Dead Bytes Tell No Lies: Hands-On DataFlash
+  Decoding and Injection — Access Control Locks" — ToorCamp 2026,
+  Yoga Studio. Facilitator: Qweary.
+
+  Built from WORKSHOP-SLIDE-CONTENT.md (15 slides W1–W15).
+  Sibling of talk/index.html — same reveal.js engine + aesthetic.
+
+  ============================================================
+  DUAL MODE — one deck, two runs, selected by ?mode= query param
+  ============================================================
+    ?mode=present   (DEFAULT when no param)
+        Operator-driven manual brief. Shows the 9 present/both
+        slides (W1,W2,W3,W4,W5,W7,W9,W11,W12). Manual nav,
+        controls + progress on, no auto-advance.
+
+    ?mode=loop
+        Unattended auto-advancing signage/reference loop. Shows
+        the 13 loop/both slides (W1,W4,W5,W6,W7,W8,W9,W10,W11,
+        W12,W13,W14,W15). Wraps last->first, per-slide dwell via
+        data-autoslide, no chrome, never stalls.
+
+  Every <section> carries data-mode="present|loop|both". Before
+  Reveal.initialize(), sections that don't belong to the active
+  mode are removed. loop/both sections carry data-autoslide (ms =
+  Dwell x 1000); present mode ignores it (global autoSlide = 0).
+
+  Asset paths (relative to this file):
+    css/deck.css
+    fonts/orbitron.woff2
+    fonts/sharetechmono.woff2
+    lib/reveal.js/dist/reset.css
+    lib/reveal.js/dist/reveal.css
+    lib/reveal.js/dist/reveal.js
+
+  Operator key chords:
+    f = fullscreen
+    n = toggle scanline overlay
+    l = reload this deck into LOOP mode    (?mode=loop)
+    p = reload this deck into PRESENT mode  (?mode=present)
+
+  Load-bearing strings (command strings, offsets, the patch table)
+  are reproduced EXACTLY from the participant handout / facilitator
+  guide — an attendee may retype them off the projector. Do not
+  paraphrase. The chip is an Adesto AT45DB041E SPI DataFlash —
+  "DataFlash", never "NAND".
+-->
+
+<link rel="stylesheet" href="lib/reveal.js/dist/reset.css">
+<link rel="stylesheet" href="lib/reveal.js/dist/reveal.css">
+<link rel="stylesheet" href="css/deck.css">
+</head>
+<body>
+
+<!-- Mode badge: shows which run is live (filled in by JS) -->
+<div class="mode-badge" id="mode-badge"></div>
+
+<div class="reveal">
+<div class="slides">
+
+<!-- ===================================================================
+     W1 — Dead Bytes Tell No Lies   [both · loop dwell 12s]
+     Title / orientation. Wrap-point in loop; opener in present.
+     =================================================================== -->
+<section data-mode="both" data-autoslide="12000" data-slide="W1">
+  <div class="slide w1 center">
+    <div class="anchor">WORKSHOP &middot; ORIENTATION</div>
+    <div>
+      <div class="title">DEAD BYTES<br>TELL NO LIES</div>
+      <div class="sub">Hands-On DataFlash Decoding and Injection &middot; Access Control Locks</div>
+      <div class="venue">TOORCAMP 2026 &middot; YOGA STUDIO &middot; JUN 27 &middot; 5:30&ndash;7:00 PM</div>
+      <div class="notnand">
+        <span class="nn-line">the chip is an Adesto AT45DB041E SPI DataFlash &mdash; NOT NAND.</span>
+        <span class="nn-line">the published title says NAND. the chip on the bench says otherwise.</span>
+      </div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W2 — What This Lock Is   [present only]
+     Anatomy. Operator narrates "why this matters" to the room.
+     =================================================================== -->
+<section data-mode="present" data-slide="W2">
+  <div class="slide tight">
+    <div class="anchor">WHAT THIS LOCK IS</div>
+    <div class="s-title">What This Lock Is</div>
+    <div class="w2-anatomy">
+      <figure class="w2-photo">
+        <img src="img/lock-board.jpg" alt="Alarm Lock T2/T3 controller board with the cleaned SOIC-8 DataFlash chip">
+        <figcaption>T2/T3 board &mdash; AT45DB041E DataFlash, SOIC-8</figcaption>
+      </figure>
+      <div>
+        <div class="components"><span class="lbl">MCU:        </span>MSP430F2418
+<span class="lbl">DataFlash:  </span>Adesto AT45DB041E  (4 Mbit SPI &middot; NOR-based &middot; SRAM-buffered)
+<span class="lbl">codes live: </span>page 0 &middot; plaintext &middot; packed BCD
+<span class="lbl">recovery:   </span>no OTP fuses &mdash; write the baseline back, always</div>
+        <div class="w2-callout">the user codes that open the door are sitting in plaintext on a $0.50 flash chip.</div>
+      </div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W3 — What You'll Do in 25 Minutes   [present only]
+     The plain goal statement the operator narrates.
+     =================================================================== -->
+<section data-mode="present" data-slide="W3">
+  <div class="slide center">
+    <div class="anchor">THE DEAL</div>
+    <div class="w3-goal">
+      <div class="s-title" style="text-align:center;margin-bottom:0">What You'll Do in 25 Minutes</div>
+      <div class="w3-flow">
+        <span class="step">READ</span><span class="arrow">&rarr;</span>
+        <span class="step">DECODE</span><span class="arrow">&rarr;</span>
+        <span class="step">INJECT</span><span class="arrow">&rarr;</span>
+        <span class="step">WRITE</span><span class="arrow">&rarr;</span>
+        <span class="step">VERIFY</span>
+      </div>
+      <div class="w3-prose">
+        At a station you read the chip, decode the codes in its DataFlash,
+        inject 3 new codes at 3 privilege levels into 3 slots, write it back,
+        and watch the lock accept each one on the keypad.
+        <span class="reassure">If anything goes sideways, the recovery write restores the lock in ~20s.
+        You cannot brick it. There are no OTP fuses.</span>
+      </div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W4 — DataFlash Page-0 Layout   [both · loop dwell 28s]
+     THE most-referenced cheat-sheet. The offset map.
+     =================================================================== -->
+<section data-mode="both" data-autoslide="28000" data-slide="W4">
+  <div class="slide tight">
+    <div class="anchor">CHEAT-SHEET &middot; PAGE-0 LAYOUT</div>
+    <div class="s-title">DataFlash Page-0 Layout</div>
+    <div class="w4-grid-wrap">
+      <pre class="hexgrid"><span class="hg-off">00000000:</span> <span class="b-mark">fd</span><span class="b-c1">b1</span> <span class="b-c1">b2b3</span> <span class="b-c1">b4b5</span> <span class="b-c1">b6b7</span> <span class="b-c1">b8b9</span> <span class="b-c1">1b11</span> <span class="b-c1">1213</span> <span class="b-c1">1415</span>  <span class="hg-asc"><span class="b-mark">.</span><span class="b-c1">...............</span></span>
+<span class="hg-off">00000010:</span> <span class="b-c1">1617</span> <span class="b-c1">1819</span> <span class="b-c1">2b21</span> <span class="b-c1">2223</span> <span class="b-c1">2425</span> <span class="b-c1">2627</span> <span class="b-c1">2829</span> <span class="b-c1">3b31</span>  <span class="hg-asc"><span class="b-c1">....+!&quot;#$%&amp;&apos;();1</span></span>
+<span class="hg-off">00000020:</span> <span class="b-c1">3233</span> <span class="b-c1">3435</span> <span class="b-c1">3637</span> <span class="b-c1">3839</span> <span class="b-c1">4b41</span> <span class="b-c1">4243</span> <span class="b-c1">4445</span> <span class="b-c1">ff</span><span class="b-c2">ff</span>  <span class="hg-asc"><span class="b-c1">23456789KABCDE.</span><span class="b-c2">.</span></span>
+<span class="hg-off">00000030:</span> <span class="b-c2">ffff</span> <span class="b-c2">ff</span><span class="b-c2">b1</span> <span class="b-c2">b2b3</span> <span class="b-c2">b4b5</span> <span class="b-c2">b6b7</span> <span class="b-c2">b8b9</span> <span class="b-c2">1b11</span> <span class="b-c2">1213</span>  <span class="hg-asc"><span class="b-c2">................</span></span>
+<span class="hg-off">00000040:</span> <span class="b-c2">1415</span> <span class="b-c2">1617</span> <span class="b-c2">1819</span> <span class="b-c2">2b21</span> <span class="b-c2">2223</span> <span class="b-c2">2425</span> <span class="b-c2">2627</span> <span class="b-c2">2829</span>  <span class="hg-asc"><span class="b-c2">......+!&quot;#$%&amp;&apos;()</span></span>
+<span class="hg-off">00000050:</span> <span class="b-c2">3b31</span> <span class="b-c2">3233</span> <span class="b-c2">3435</span> <span class="b-c2">3637</span> <span class="b-c2">3839</span> <span class="b-c2">4b41</span> <span class="b-c2">4243</span> <span class="b-c2">4445</span>  <span class="hg-asc"><span class="b-c2">;123456789KABCDE</span></span>
+<span class="hg-off">00000060:</span> <span class="b-c2">ffff</span> <span class="b-c2">ffff</span> <span class="b-c2">ff</span><span class="b-c3">b1</span> <span class="b-c3">b2b3</span> <span class="b-c3">b4b5</span> <span class="b-c3">b6b7</span> <span class="b-c3">b8b9</span> <span class="b-c3">1b11</span>  <span class="hg-asc"><span class="b-c2">.....</span><span class="b-c3">...........</span></span>
+<span class="hg-off">00000070:</span> <span class="b-c3">1213</span> <span class="b-c3">1415</span> <span class="b-c3">1617</span> <span class="b-c3">1819</span> <span class="b-c3">2b21</span> <span class="b-c3">2223</span> <span class="b-c3">2425</span> <span class="b-c3">2627</span>  <span class="hg-asc"><span class="b-c3">........+!&quot;#$%&amp;&apos;</span></span>
+<span class="hg-off">00000080:</span> <span class="b-c3">2829</span> <span class="b-c3">3b31</span> <span class="b-c3">3233</span> <span class="b-c3">3435</span> <span class="b-c3">3637</span> <span class="b-c3">3839</span> <span class="b-c3">4b41</span> <span class="b-c3">4243</span>  <span class="hg-asc"><span class="b-c3">();123456789KABC</span></span>
+<span class="hg-off">00000090:</span> <span class="b-c3">4445</span> <span class="b-c3">ffff</span> <span class="b-c3">ffff</span> <span class="b-c3">ff</span><span class="b-act">01</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span>  <span class="hg-asc"><span class="b-c3">DE.....</span><span class="b-act">.........</span></span>
+<span class="hg-off">000000a0:</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span>  <span class="hg-asc"><span class="b-act">................</span></span>
+<span class="hg-off">000000b0:</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">0101</span>  <span class="hg-asc"><span class="b-act">................</span></span>
+<span class="hg-off">000000c0:</span> <span class="b-act">0101</span> <span class="b-act">0101</span> <span class="b-act">ffff</span> <span class="b-act">ffff</span> <span class="b-act">ff</span><span class="b-perm">01</span> <span class="b-perm">f101</span> <span class="b-perm">e101</span> <span class="b-perm">c101</span>  <span class="hg-asc"><span class="b-act">.........</span><span class="b-perm">.......</span></span>
+<span class="hg-off">000000d0:</span> <span class="b-perm">f101</span> <span class="b-perm">0101</span> <span class="b-perm">e101</span> <span class="b-perm">0101</span> <span class="b-perm">0101</span> <span class="b-perm">c101</span> <span class="b-perm">0101</span> <span class="b-perm">0101</span>  <span class="hg-asc"><span class="b-perm">................</span></span>
+<span class="hg-off">000000e0:</span> <span class="b-perm">0101</span> <span class="b-perm">0101</span> <span class="b-perm">0101</span> <span class="b-perm">0101</span> <span class="b-perm">0101</span> <span class="b-perm">0101</span> <span class="b-perm">0101</span> <span class="b-perm">0101</span>  <span class="hg-asc"><span class="b-perm">................</span></span>
+<span class="hg-off">000000f0:</span> <span class="b-perm">0101</span> <span class="b-perm">0101</span> <span class="b-perm">0101</span> <span class="b-perm">ff</span><span class="b-pad">ff</span> <span class="b-pad">ffff</span> <span class="b-pad">ffff</span> <span class="b-pad">ffff</span> <span class="b-pad">ffff</span>  <span class="hg-asc"><span class="b-perm">.......</span><span class="b-pad">.........</span></span>
+<span class="hg-off">00000100:</span> <span class="b-pad">ffff</span> <span class="b-pad">ffff</span> <span class="b-pad">ffff</span> <span class="b-pad">ffff</span>                      <span class="hg-asc"><span class="b-pad">........</span></span></pre>
+      <div class="w4-legend">
+        <div class="lg-row"><span class="lg-sw b-mark">&nbsp;&nbsp;</span> <span class="lg-off">0x00</span> page marker</div>
+        <div class="lg-row"><span class="lg-sw b-c1">&nbsp;&nbsp;</span> <span class="lg-off">0x01&ndash;0x32</span> code byte 1</div>
+        <div class="lg-row"><span class="lg-sw b-c2">&nbsp;&nbsp;</span> <span class="lg-off">0x33&ndash;0x64</span> code byte 2</div>
+        <div class="lg-row"><span class="lg-sw b-c3">&nbsp;&nbsp;</span> <span class="lg-off">0x65&ndash;0x96</span> code byte 3</div>
+        <div class="lg-row"><span class="lg-sw b-act">&nbsp;&nbsp;</span> <span class="lg-off">0x97&ndash;0xC8</span> active flag</div>
+        <div class="lg-row"><span class="lg-sw b-perm">&nbsp;&nbsp;</span> <span class="lg-off">0xC9&ndash;0xFA</span> permission</div>
+        <div class="lg-row"><span class="lg-sw b-pad">&nbsp;&nbsp;</span> <span class="lg-off">0xFB&ndash;0x107</span> padding</div>
+        <div class="lg-note">one slot N: code1=0x01+N &middot; code2=0x33+N &middot; code3=0x65+N &middot; active=0x97+N &middot; perm=0xC9+N. each band 50 bytes &mdash; same data, shifted right one band &mdash; that is the diagonal.</div>
+        <div class="lg-paper">full 50-user decoded table is on the printed handout.</div>
+      </div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W5 — Decode Rules   [both · loop dwell 24s]
+     Second-most-referenced cheat-sheet. The 0xB-for-zero quirk.
+     =================================================================== -->
+<section data-mode="both" data-autoslide="24000" data-slide="W5">
+  <div class="slide tight">
+    <div class="anchor">CHEAT-SHEET &middot; DECODE RULES</div>
+    <div class="s-title">Decode Rules</div>
+    <div class="w5-zones">
+      <div class="zone z-full">
+        <div class="z-label">1 &middot; PACKED BCD</div>
+        <div class="z-body">one code byte = two decimal digits, one per nibble
+
+   0x42 <span class="z-arrow">&rarr;</span> 4 2        0x37 <span class="z-arrow">&rarr;</span> 3 7
+
+a 6-digit code = 3 bytes  (high nibble first, left to right)</div>
+      </div>
+      <div class="zone z-full z-trap">
+        <div class="z-label red">2 &middot; THE TRAP &middot; digit 0 is NOT 0</div>
+        <div class="z-body">a decimal 0 is stored as nibble <span class="z-em">0xB</span>
+
+   0 <span class="z-arrow">&rarr;</span> B      (NOT 0x00 &middot; NOT ASCII &apos;0&apos; 0x30)
+
+so in a hex view a digit-zero shows as &quot;B&quot; &mdash;
+it is the nibble value 0xB, not the letter B.</div>
+      </div>
+      <div class="z-pair">
+        <div class="zone z-perm">
+          <div class="z-label">3 &middot; PERMISSION BYTE</div>
+          <div class="z-body"><span class="z-amber">F1</span>  Master
+<span class="z-amber">E1</span>  Elevated
+<span class="z-amber">C1</span>  Supervisor
+<span class="z-amber">01</span>  Normal
+<span class="z-amber">FF</span>  empty</div>
+        </div>
+        <div class="zone z-active">
+          <div class="z-label">4 &middot; ACTIVE BYTE</div>
+          <div class="z-body"><span class="z-amber">01</span>  active
+<span class="z-amber">FF</span>  empty</div>
+        </div>
+      </div>
+      <div class="zone z-full z-worked">
+        <div class="z-label">WORKED EXAMPLE &middot; a code with a zero in it</div>
+        <div class="z-body">code     4   2   0   4   2   0
+nibble   4   2   <span class="z-green">B</span>   4   2   <span class="z-green">B</span>      <span class="z-arrow">&larr;</span> every 0 became 0xB
+byte      <span class="z-green">0x42</span>     <span class="z-green">0xB4</span>     <span class="z-green">0x2B</span>
+
+420420  is stored as  <span class="z-green">42 B4 2B</span>  on the chip.</div>
+      </div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W6 — The Slot-0 Anomaly   [loop only · dwell 22s]
+     Standalone payoff card. The "code decoupled from role" insight.
+     =================================================================== -->
+<section data-mode="loop" data-autoslide="22000" data-slide="W6">
+  <div class="slide tight">
+    <div class="anchor">REFERENCE &middot; SLOT-0 ANOMALY</div>
+    <div class="s-title">The Slot-0 Anomaly</div>
+    <div class="refcard">
+      <div class="rc-block"><span class="rc-head">SLOT 0 ON THE BENCH LOCK</span>
+  code byte 1  0x0001  0x12  <span class="rc-arrow">&rarr;</span> "12"
+  code byte 2  0x0033  0x34  <span class="rc-arrow">&rarr;</span> "34"
+  code byte 3  0x0065  0x56  <span class="rc-arrow">&rarr;</span> "56"            <span class="rc-green">CODE = 123456</span>
+  active       0x0097  0x01  ACTIVE
+  permission   0x00C9  0x01  <span class="rc-amber">Normal User</span>  <span class="rc-arrow">&larr;</span> not Master</div>
+      <div class="rc-payoff">
+        123456 is the Alarm Lock factory-default MASTER code.
+        <span class="rc-mute">but the permission byte says NORMAL USER.</span>
+      </div>
+      <div class="rc-payoff amber">the code value is decoupled from the role.
+        <span class="rc-mute">this lock was re-mastered before you got here &mdash; the new master lives
+elsewhere on the chip; 123456 was left behind as a Normal User.
+the firmware honors the role field, independent of the code or the slot.</span></div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W7 — The Station Flow   [both · loop dwell 20s]
+     Procedure card. minipro command shapes — EXACT, retype-able.
+     =================================================================== -->
+<section data-mode="both" data-autoslide="20000" data-slide="W7">
+  <div class="slide tight">
+    <div class="anchor">PROCEDURE &middot; STATION FLOW</div>
+    <div class="s-title">The Station Flow</div>
+    <div class="w7-split">
+      <div class="w7-col">
+        <div class="w7-col-head">ADVANCED &middot; CLI <span class="w7-col-sub">raw programmer</span></div>
+        <div class="w7-flow">
+      <div class="flow-row">
+        <div class="fr-step"><span class="fr-num">1</span>READ</div>
+        <div class="fr-body">
+          <span class="fr-cmd">sudo minipro -i -p 'AT45DB041E[Page264]@SOIC8' -r my-dump.bin</span>
+          <span class="fr-note">want 540672 bytes &middot; chip-ID 0x0000 = re-seat the clip</span>
+        </div>
+      </div>
+      <div class="flow-row">
+        <div class="fr-step"><span class="fr-num">2</span>DECODE</div>
+        <div class="fr-body">
+          <span class="fr-cmd">xxd my-dump.bin | head -20</span>
+          <span class="fr-note">byte 0 = FD &middot; decode slot 0 &middot; notice the permission flag</span>
+        </div>
+      </div>
+      <div class="flow-row">
+        <div class="fr-step"><span class="fr-num">3</span>INJECT</div>
+        <div class="fr-body">
+          <span class="fr-cmd">python3 ~/workshop/build-injected.py my-dump.bin injected.bin</span>
+          <span class="fr-note">15-byte patch &middot; 3 slots &middot; 3 privilege levels</span>
+        </div>
+      </div>
+      <div class="flow-row">
+        <div class="fr-step"><span class="fr-num">4</span>WRITE</div>
+        <div class="fr-body">
+          <span class="fr-cmd">sudo minipro -i -p 'AT45DB041E[Page264]@SOIC8' -w injected.bin</span>
+          <span class="fr-note">~20s &middot; "Verification OK" = it took</span>
+        </div>
+      </div>
+      <div class="flow-row">
+        <div class="fr-step"><span class="fr-num">5</span>VERIFY</div>
+        <div class="fr-body">
+          <span class="fr-cmd">re-read &middot; cmp injected.bin post-write.bin</span>
+          <span class="fr-note">punch each code on the keypad &middot; the lock opens</span>
+        </div>
+      </div>
+        </div>
+      </div>
+      <div class="w7-col">
+        <div class="w7-col-head amber">BROWSER TOOL <span class="w7-col-sub">point-and-click</span></div>
+        <figure class="w7-shot">
+          <img src="img/browser-tool.png" alt="Lock User-Code Workshop Control Panel browser tool screenshot">
+          <figcaption>
+            <span class="ws-line"><span class="ws-cmd">./bin/start.sh</span> from the repo root &middot; opens on localhost</span>
+            <span class="ws-line"><span class="ws-mode">PRACTICE</span> sample copy, no hardware &middot; <span class="ws-mode amber">LIVE LOCK</span> writes the real chip</span>
+            <span class="ws-line">READ decodes the page-0 table (every slot) &middot; WRITE drops a 6-digit code into a slot + role (preview)</span>
+            <span class="ws-line ws-mute">prints the matching CLI: <span class="ws-cmd">lock-tool.py read --all</span> &middot; <span class="ws-cmd">write --code &hellip; --slot &hellip; --role &hellip;</span> &middot; <span class="ws-cmd">--live</span></span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W8 — The Injection Payload   [loop only · dwell 20s]
+     Reference card. The three-slot patch table.
+     =================================================================== -->
+<section data-mode="loop" data-autoslide="20000" data-slide="W8">
+  <div class="slide tight">
+    <div class="anchor">REFERENCE &middot; INJECTION PAYLOAD</div>
+    <div class="s-title">The Injection Payload</div>
+    <div class="refcard">
+      <div class="rc-block"><span class="rc-head">THE 3 CODES YOU INJECT</span>
+
+<span class="rc-mute">slot  code     bytes (packed BCD)   permission   perm byte</span>
+ 19   133769   0x13 0x37 0x69       <span class="rc-amber">Master</span>       0xF1
+ 32   420420   0x42 <span class="rc-green">0xB4</span> <span class="rc-green">0x2B</span>       <span class="rc-amber">Supervisor</span>   0xC1   <span class="rc-arrow">&larr;</span> exercises 0xB-for-zero
+ 49   696969   0x69 0x69 0x69       <span class="rc-amber">Elevated</span>     0xE1
+
+<span class="rc-head">WATCH SLOT 32</span>   the two zeros land at nibble 0xB in code bytes 2 and 3.
+                look for  <span class="rc-green">b4</span>  at column 0x53  and  <span class="rc-green">2b</span>  at column 0x85
+                in your own xxd. if 420420 unlocks <span class="rc-arrow">&rarr;</span> the 0xB rule is real.</div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W9 — Recovery Write   [both · loop dwell 14s]
+     Reassurance + the recovery command. "You cannot brick it."
+     =================================================================== -->
+<section data-mode="both" data-autoslide="14000" data-slide="W9">
+  <div class="slide tight">
+    <div class="anchor">SAFETY NET &middot; RECOVERY WRITE</div>
+    <div class="w9-recovery">
+      <div class="rec-lead">NOTHING YOU DO HERE IS PERMANENT.</div>
+      <div class="rec-cmd"><span class="rc-label">recovery write &mdash; ~20 seconds, restores the lock to baseline:</span>sudo minipro -i -p 'AT45DB041E[Page264]@SOIC8' -w \
+    ~/workshop/intact-lock-AT45DB041E-main-2026-05-20.bin</div>
+      <div class="rec-tail">
+        the AT45DB041E has no OTP fuses &middot; no auto-lock-on-write.
+        <span class="rt-amber">recovery is unconditionally available. you cannot brick it.</span>
+        ask a facilitator anytime.
+      </div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W10 — Station Map   [loop only · dwell 18s]
+     Room map + the load-bearing amber traffic banner.
+     =================================================================== -->
+<section data-mode="loop" data-autoslide="18000" data-slide="W10">
+  <div class="slide tight">
+    <div class="anchor">SIGNAGE &middot; STATION MAP</div>
+    <div class="s-title">Station Map</div>
+    <div class="w10-map">
+      <div class="map-block"><span class="mp-id">P1  P2  P3  P4</span>    programmer stations &mdash; read&rarr;decode&rarr;inject&rarr;write&rarr;verify
+                  <span class="mp-mute">~25 min each &middot; one facilitator per station</span>
+
+<span class="mp-id">S1</span>                standalone lock demo &mdash; remote-release jumper bridge,
+                  <span class="mp-mute">stiff-wire attack, defender discussion</span>
+<span class="mp-id">S2</span>                standalone lock demo &mdash; spare attacks + physical-vuln talk
+
+<span class="mp-id">D1</span>                drill-open core station &mdash; take a turn drilling a spare core</div>
+      <div class="traffic-banner">
+        <span class="tb-headline">WAITING FOR A PROGRAMMER SLOT?</span>
+        <span class="tb-sub">go drill a core (D1) &middot; hit the standalone demos (S1 / S2)</span>
+      </div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W11 — Drill Station Safety   [both · loop dwell 16s]
+     RED-bordered safety card. "NO GLASSES, NO DRILL."
+     =================================================================== -->
+<section data-mode="both" data-autoslide="16000" data-slide="W11">
+  <div class="slide center">
+    <div class="anchor">SAFETY &middot; DRILL STATION</div>
+    <div class="safety-card">
+      <div class="sc-title">D1 &middot; DRILL STATION &mdash; GEAR ON FIRST</div>
+      <div class="sc-gear">
+        <span class="gear-item">SAFETY GLASSES</span>
+        <span class="gear-item gear-soft">ear protection</span>
+        <span class="gear-item gear-soft">nitrile / work gloves</span>
+      </div>
+      <div class="sc-supplies">cutting lube on the bit &middot; rag for chips &middot; tray for cores</div>
+      <div class="sc-rule">NO GLASSES, NO DRILL. not negotiable.</div>
+      <div class="sc-watch">want to watch instead? that's fine &mdash; stand back of the line.</div>
+      <div class="sc-stuck">stuck bit?  reverse before pulling &middot; pull straight, not angled &middot; ask a facilitator</div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W12 — Everything Is Replicable   [both · loop dwell 14s]
+     Close / persistence. Repo, tools, contact.
+     =================================================================== -->
+<section data-mode="both" data-autoslide="14000" data-slide="W12">
+  <div class="slide tight">
+    <div class="anchor">CLOSE &middot; TAKE IT HOME</div>
+    <div class="w12-close">
+      <div class="take-title">TAKE IT HOME</div>
+      <div class="resources"><span class="res-lbl">repo     </span><a class="res-url" href="https://github.com/Qweary/ToorCamp2026-LockTalk-LockWorkshop">github.com/Qweary/ToorCamp2026-LockTalk-LockWorkshop</a>
+         code &middot; dumps &middot; 33pp handwritten notes &middot; 5-part blog series
+
+<span class="res-lbl">tool     </span>minipro (David Griffith fork) &middot; Xgecu T48 (~$30&ndash;55)
+<span class="res-lbl">hex      </span><a class="res-url" href="https://imhex.werwolv.net">imhex.werwolv.net</a>
+<span class="res-lbl">blog     </span><a class="res-url" href="https://qweary.github.io">qweary.github.io</a>
+
+<span class="res-lbl">contact  </span>Qweary</div>
+      <div class="close-rule"></div>
+      <div class="close-lines">everything you did here is on real hardware.<br>
+everything is in the repo. all of it is replicable.</div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W13 — Reading a Bad Dump   [loop only · dwell 18s]
+     Troubleshooting card. "Is my dump good?"
+     =================================================================== -->
+<section data-mode="loop" data-autoslide="18000" data-slide="W13">
+  <div class="slide tight">
+    <div class="anchor">TROUBLESHOOT &middot; BAD DUMP</div>
+    <div class="s-title">Reading a Bad Dump</div>
+    <div class="refcard">
+      <div class="rc-block"><span class="rc-head">DID YOUR READ WORK?</span>
+
+<span class="rc-green">540,672 bytes</span>        good. main array, 264-byte native page mode.
+<span class="rc-amber">540,800 bytes</span>        tool also grabbed the Security Register &mdash; ignore the last 128.
+<span class="rc-red">524,288 bytes</span>        wrong mode (256-byte). unusable &mdash; re-read with the device string.
+<span class="rc-red">all 0x00</span>             clip not on the chip &mdash; re-seat the SOIC-8 clip.
+<span class="rc-red">Chip ID 0x0000</span>       clip didn't bite &mdash; re-seat. do NOT add -y on the first try.
+
+<span class="rc-mute">firmware-mismatch warning?   non-blocking. let it scroll past.</span></div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W14 — When a Code Fails   [loop only · dwell 18s]
+     Troubleshooting card. Keypad-failure decision tree.
+     =================================================================== -->
+<section data-mode="loop" data-autoslide="18000" data-slide="W14">
+  <div class="slide tight">
+    <div class="anchor">TROUBLESHOOT &middot; CODE FAILS</div>
+    <div class="s-title">When a Code Fails</div>
+    <div class="refcard">
+      <div class="rc-block"><span class="rc-head">PUNCHED THE CODE &mdash; IT DIDN'T OPEN?</span>
+
+all 3 injected fail, 123456 still works   <span class="rc-amber">page 0 didn't take &middot; re-clip, re-write</span>
+133769 + 696969 work, 420420 doesn't      <span class="rc-amber">0xB-for-zero may differ this revision &middot; flag it</span>
+only 133769 works                          <span class="rc-amber">perm-flag semantics may differ &middot; flag it</span>
+nothing works, not even 123456            <span class="rc-red">page 0 corrupted &middot; run the recovery write (W9)</span></div>
+      <div class="rc-payoff">a "valid" end state is EITHER:
+        <span class="rc-mute">all four codes unlocking   OR   recovered to baseline with 123456 unlocking.</span>
+        you saw the attack work. you saw recovery work. both are wins.</div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     W15 — The Advanced Beat   [loop only · dwell 20s]
+     The defender's tell — entry vs sustained control.
+     =================================================================== -->
+<section data-mode="loop" data-autoslide="20000" data-slide="W15">
+  <div class="slide tight">
+    <div class="anchor">DEPTH &middot; THE DEFENDER'S TELL</div>
+    <div class="s-title">The Advanced Beat</div>
+    <div class="refcard">
+      <div class="rc-block"><span class="rc-head">IF YOU HAVE TIME &mdash; THE INTERESTING PART</span>
+
+inject 133769 as Master (0xF1). it opens the door.
+now try programming-mode entry with 133769. it <span class="rc-red">WON'T</span> open programming mode &mdash;
+even though the chip says it's Master.</div>
+      <div class="rc-payoff">the flash-write attack is enough for unauthorized ENTRY.
+        <span class="rc-mute">it is NOT enough for sustained operational CONTROL.</span></div>
+      <div class="rc-payoff amber"><span class="rc-mute">the firmware does extra validation for programming mode that ordinary
+unlock does not. the audit log behaves differently for injected codes
+than for keypad-programmed ones. that difference is the defender's tell.</span></div>
+    </div>
+    <div class="brand">dead-bytes.workshop</div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="lib/reveal.js/dist/reveal.js"></script>
+<script>
+  // ==================================================================
+  // DUAL-MODE selection
+  //   Read ?mode= (default 'present'). Strip the sections that don't
+  //   belong to the active run, then initialize reveal with the
+  //   per-mode config. loop/both sections carry data-autoslide (ms);
+  //   present ignores it because its global autoSlide is 0.
+  // ==================================================================
+  const params = new URLSearchParams(location.search);
+  let mode = params.get('mode');
+  if (mode !== 'present' && mode !== 'loop') mode = 'present'; // default + guard
+  const isLoop = (mode === 'loop');
+
+  // Strip sections that don't belong to this run.
+  document.querySelectorAll('.reveal .slides section[data-mode]').forEach(s => {
+    const m = s.getAttribute('data-mode');
+    const show = (m === 'both') || (m === mode);
+    if (!show) s.remove();
+  });
+
+  // Mode badge (faint, top-right) so an operator can see which run is live.
+  const badge = document.getElementById('mode-badge');
+  if (badge) {
+    badge.textContent = isLoop ? 'LOOP' : 'PRESENT';
+    if (isLoop) badge.style.display = 'none'; // no chrome in the unattended loop
+  }
+
+  Reveal.initialize({
+    width: 1920,
+    height: 1080,
+    margin: 0,
+    minScale: 0.2,
+    maxScale: 2.0,
+    transition: 'none',
+    backgroundTransition: 'none',
+
+    // present: operator drives, with chrome. loop: unattended, no chrome.
+    controls: !isLoop,
+    controlsTutorial: false,
+    progress: !isLoop,
+    slideNumber: !isLoop ? 'c/t' : false,
+    showSlideNumber: 'speaker',
+
+    // loop wraps last -> first; present is a finite linear brief.
+    loop: isLoop,
+
+    // global autoSlide: present = 0 (manual). loop = 12000 fallback;
+    // per-slide data-autoslide overrides it with each slide's Dwell.
+    autoSlide: isLoop ? 12000 : 0,
+    // present: arrow keys halt any stray autoslide. loop: never stall.
+    autoSlideStoppable: !isLoop,
+
+    hash: false,
+    history: false,
+    keyboard: true,
+    overview: false,
+    touch: true,
+    fragments: false,
+    navigationMode: 'linear',
+    plugins: []
+  });
+
+  // ==================================================================
+  // Operator key chords
+  //   f — fullscreen
+  //   n — toggle scanline overlay
+  //   l — reload into LOOP mode    (?mode=loop)
+  //   p — reload into PRESENT mode (?mode=present)
+  // The l/p chords are a convenience so the operator can flip the
+  // station laptop from the manual brief to the unattended loop (and
+  // back) without editing the URL by hand. They reload the page so
+  // reveal re-strips for the new mode cleanly.
+  // ==================================================================
+  document.addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key.toLowerCase();
+
+    if (k === 'f') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+      e.preventDefault();
+    } else if (k === 'n') {
+      document.body.classList.toggle('no-scanline');
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    } else if (k === 'l') {
+      if (mode !== 'loop') location.search = '?mode=loop';
+      e.preventDefault();
+    } else if (k === 'p') {
+      if (mode !== 'present') location.search = '?mode=present';
+      e.preventDefault();
+    }
+  }, false);
+</script>
+</body>
+</html>

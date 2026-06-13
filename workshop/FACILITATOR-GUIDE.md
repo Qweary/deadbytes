@@ -1,5 +1,5 @@
 # Dead Bytes Tell No Lies — Facilitator Guide
-## ToorCamp 2026 · NightMrkt / Volleyball Court · 90 min
+## ToorCamp 2026 · Yoga Studio · 90 min
 ### Qweary
 
 ---
@@ -114,10 +114,10 @@ If any of these fail at any station, swap to a spare laptop or pull the operator
 
 ### ToorCamp-specific logistics
 
-- [ ] Power: NightMrkt tent + volleyball court. One power strip per programmer station (T48 USB plus laptop). One strip near the drill station for the drill chargers
+- [ ] Power: the Yoga Studio. One power strip per programmer station (T48 USB plus laptop). One strip near the drill station for the drill chargers
 - [ ] Wind: handouts will blow. A rock per station, or fold them in half
 - [ ] Lighting: workshop runs into late afternoon / early evening; if you are anywhere near sunset by 70:00, have a headlamp per station
-- [ ] Table layout: four programmer tables in a row, standalone demos on a separate table, drill station outside the tent with clear floor space and ear-protection visible from the entry — that visual cue alone manages the noise expectation
+- [ ] Table layout: four programmer tables in a row, standalone demos on a separate table, drill station set apart in the Yoga Studio with clear floor space and ear-protection visible from the entry — that visual cue alone manages the noise expectation
 
 ### The two bundled `.bin` files
 

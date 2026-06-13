@@ -1,0 +1,935 @@
+/* ====================================================================
+   DEAD BYTES TELL NO LIES — WORKSHOP deck CSS
+   Dual-mode (?mode=present | ?mode=loop) signage + reference deck.
+   ToorCamp 2026, Yoga Studio. Facilitator: Qweary.
+
+   Sibling of the talk deck (talk/css/deck.css): same palette, fonts,
+   scanline, anchor/brand primitives, 1920x1080 base, transition:none.
+   Adds workshop-only components: large monospace cheat-sheet tables
+   (legible from across a tent), red-bordered safety card, amber
+   traffic-signage banner, procedure cards, reference cards.
+
+   Palette: deep dark green-black background, terminal-green primary,
+   amber secondary accent, red for safety/danger beats.
+   ==================================================================== */
+
+/* ---------- Fonts (local) ---------- */
+@font-face{
+  font-family:'Orbitron';
+  font-style:normal;
+  font-weight:400;
+  font-display:block;
+  src:url('../fonts/orbitron.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Orbitron';
+  font-style:normal;
+  font-weight:700;
+  font-display:block;
+  src:url('../fonts/orbitron.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Orbitron';
+  font-style:normal;
+  font-weight:900;
+  font-display:block;
+  src:url('../fonts/orbitron.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Share Tech Mono';
+  font-style:normal;
+  font-weight:400;
+  font-display:block;
+  src:url('../fonts/sharetechmono.woff2') format('woff2');
+}
+
+/* ---------- CSS vars: hardware-hacking green palette ---------- */
+:root{
+  /* background */
+  --bg:#020f08;           /* deep dark green-black */
+  --bp:#031208;           /* slightly lighter panel background */
+  --bi:#040f0a;           /* inner panel */
+
+  /* terminal green family — primary accent */
+  --g:#00e676;            /* terminal green */
+  --gd:#004d1a;           /* dark green */
+  --gm:#00c65a;           /* mid green */
+  --gl:rgba(0,230,118,.40);
+
+  /* amber — secondary accent for warnings / signage */
+  --amber:#f0a500;
+  --amberd:#b07800;
+  --amberm:#d08800;
+
+  /* red — danger / safety highlight */
+  --red:#ff3355;
+  --redm:#c02040;
+
+  /* text */
+  --w:#c8e6c9;            /* off-white / green-tinted */
+  --gr:#4a7a55;           /* muted green text */
+  --bdr:#0a2010;          /* border color */
+
+  /* glows */
+  --gg:0 0 10px rgba(0,230,118,.40);
+  --ga:0 0 10px rgba(240,165,0,.38);
+  --gr-r:0 0 10px rgba(255,51,85,.50);
+}
+
+/* ---------- reveal.js overrides ---------- */
+html, body{
+  background:var(--bg);
+}
+.reveal{
+  font-family:'Share Tech Mono','Courier New',monospace;
+  font-size:24px;
+  color:var(--w);
+  font-weight:400;
+}
+.reveal .slides{
+  text-align:left;
+}
+.reveal .slides section{
+  text-align:left;
+  padding:0;
+}
+.reveal h1,.reveal h2,.reveal h3,.reveal h4,.reveal h5,.reveal h6{
+  font-family:'Orbitron','Share Tech Mono',sans-serif;
+  text-transform:none;
+  letter-spacing:3px;
+  margin:0;
+  font-weight:900;
+  color:var(--g);
+}
+.reveal p{margin:0;color:var(--w);line-height:1.55}
+.reveal code,.reveal pre{
+  font-family:'Share Tech Mono',monospace;
+  color:var(--w);
+  background:transparent;
+  box-shadow:none;
+  white-space:pre;
+}
+.reveal pre{
+  display:block;
+  width:auto;
+  margin:0;
+  background:transparent;
+  font-size:.82em;
+  line-height:1.45;
+}
+
+/* Links */
+.reveal a{color:var(--amberm);text-decoration:none}
+.reveal a:hover{color:var(--amber);text-shadow:var(--ga)}
+
+/* Controls: muted green (present mode only) */
+.reveal .controls{color:var(--gd)}
+.reveal .controls .controls-arrow:before,.reveal .controls .controls-arrow:after{background:var(--gd)}
+
+/* Progress bar: muted green (present mode only) */
+.reveal .progress{color:var(--gm);height:4px}
+.reveal .progress span{background:var(--gm)}
+
+/* Slide number — bottom-right, muted */
+.reveal .slide-number{
+  background:transparent;
+  color:#1e4a2a;
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;
+  letter-spacing:1px;
+  right:14px;
+  bottom:12px;
+}
+
+/* ---------- Scanline overlay (default ON; toggle with 'n') ---------- */
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:9999;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,.058) 3px,
+    rgba(0,0,0,.058) 4px
+  );
+}
+body.no-scanline::after{display:none}
+
+/* ---------- Slide layout primitives ---------- */
+.slide{
+  width:100%;
+  height:100%;
+  padding:64px 72px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  gap:24px;
+  position:relative;
+}
+.slide.center{justify-content:center;align-items:center}
+.slide.tight{padding:48px 64px;gap:18px}
+
+/* Section anchor tag — top-left console prompt */
+.anchor{
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;
+  letter-spacing:3px;
+  color:#1e4a2a;
+  position:absolute;
+  top:30px;
+  left:72px;
+}
+.anchor::before{content:'// '}
+
+/* Brand — bottom-left, very faint */
+.brand{
+  position:absolute;
+  bottom:18px;
+  left:72px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;
+  letter-spacing:2.5px;
+  color:#122a18;
+}
+
+/* ---------- Mode badge — top-right, faint (which run is live) ---------- */
+.mode-badge{
+  position:fixed;
+  top:14px;
+  right:16px;
+  z-index:10000;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;
+  letter-spacing:2.5px;
+  color:#1e4a2a;
+  padding:3px 9px;
+  border:1px solid #1e4a2a;
+  background:rgba(0,0,0,.45);
+  pointer-events:none;
+}
+
+/* ---------- Block cursor (blinking) ---------- */
+.cur{
+  display:inline-block;
+  width:.55em;
+  height:1em;
+  background:currentColor;
+  vertical-align:-0.12em;
+  margin-left:.22em;
+  box-shadow:0 0 8px currentColor;
+}
+.cur.blink{animation:blink .8s steps(1) infinite}
+@keyframes blink{0%,50%{opacity:1}50.01%,100%{opacity:0}}
+
+/* ====================================================================
+   W1 — Title / orientation
+   ==================================================================== */
+.w1 .title{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:84px;
+  letter-spacing:8px;
+  color:var(--g);
+  text-shadow:var(--gg);
+  line-height:1.05;
+  text-align:center;
+}
+.w1 .sub{
+  font-family:'Share Tech Mono',monospace;
+  font-size:26px;
+  letter-spacing:2px;
+  color:var(--gm);
+  text-shadow:0 0 8px rgba(0,198,90,.30);
+  margin-top:22px;
+  text-align:center;
+}
+.w1 .venue{
+  font-family:'Share Tech Mono',monospace;
+  font-size:15px;
+  letter-spacing:5px;
+  color:var(--gr);
+  margin-top:38px;
+  text-align:center;
+}
+.w1 .handle{
+  font-family:'Share Tech Mono',monospace;
+  font-size:16px;
+  letter-spacing:2.5px;
+  color:var(--gm);
+  margin-top:14px;
+  text-align:center;
+}
+.w1 .notnand{
+  margin-top:42px;
+  border:2px solid var(--amber);
+  border-left-width:6px;
+  background:rgba(240,165,0,.05);
+  padding:16px 26px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:18px;
+  letter-spacing:1px;
+  color:var(--amber);
+  text-shadow:var(--ga);
+  line-height:1.7;
+  max-width:1100px;
+  text-align:left;
+}
+.w1 .notnand .nn-line{display:block}
+
+/* ====================================================================
+   Generic slide title (declarative Orbitron header for content slides)
+   ==================================================================== */
+.s-title{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:44px;
+  letter-spacing:5px;
+  color:var(--g);
+  text-shadow:var(--gg);
+  line-height:1.1;
+  margin-bottom:6px;
+}
+.s-title.amber{color:var(--amber);text-shadow:var(--ga)}
+.s-title.red{color:var(--red);text-shadow:var(--gr-r)}
+
+/* ====================================================================
+   W2 — What This Lock Is (anatomy) — two column
+   ==================================================================== */
+.w2-anatomy{
+  display:grid;
+  grid-template-columns:1fr 1.25fr;
+  gap:48px;
+  align-items:start;
+  max-width:1500px;
+}
+/* W2 — real board photo, framed to fill its column */
+.w2-anatomy .w2-photo{
+  margin:0;
+  border:1px solid var(--gd);
+  background:var(--bp);
+  padding:8px;
+}
+.w2-anatomy .w2-photo img{
+  display:block;
+  width:100%;
+  height:380px;
+  object-fit:cover;
+  border:1px solid var(--bdr);
+}
+.w2-anatomy .w2-photo figcaption{
+  font-family:'Share Tech Mono',monospace;
+  font-size:15px;
+  letter-spacing:1px;
+  color:var(--gr);
+  margin-top:8px;
+  text-align:left;
+}
+.w2-anatomy .components{
+  font-family:'Share Tech Mono',monospace;
+  font-size:24px;
+  letter-spacing:1px;
+  color:var(--w);
+  line-height:1.85;
+  white-space:pre;
+}
+.w2-anatomy .components .lbl{color:var(--gm)}
+.w2-callout{
+  font-family:'Share Tech Mono',monospace;
+  font-size:22px;
+  letter-spacing:1px;
+  color:var(--amber);
+  text-shadow:var(--ga);
+  margin-top:30px;
+  padding-top:22px;
+  border-top:1px solid var(--bdr);
+  line-height:1.6;
+}
+
+/* ====================================================================
+   W3 — What You'll Do in 25 Minutes — flow chevrons + prose
+   ==================================================================== */
+.w3-goal{
+  display:flex;
+  flex-direction:column;
+  gap:40px;
+  max-width:1500px;
+  margin:auto;
+  width:100%;
+}
+.w3-flow{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  flex-wrap:wrap;
+}
+.w3-flow .step{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:40px;
+  letter-spacing:4px;
+  color:var(--g);
+  text-shadow:var(--gg);
+  border:1px solid var(--gd);
+  background:var(--bp);
+  padding:14px 26px;
+}
+.w3-flow .arrow{
+  font-family:'Share Tech Mono',monospace;
+  font-size:38px;
+  color:var(--gm);
+}
+.w3-prose{
+  font-family:'Share Tech Mono',monospace;
+  font-size:26px;
+  letter-spacing:1px;
+  color:var(--w);
+  line-height:1.75;
+}
+.w3-prose .reassure{
+  display:block;
+  margin-top:24px;
+  color:var(--amber);
+  text-shadow:var(--ga);
+}
+
+/* ====================================================================
+   Cheat-sheet panel (W4, W5) — THE big legible monospace tables.
+   Sized to be scannable from across a tent.
+   ==================================================================== */
+.cheat{
+  font-family:'Share Tech Mono',monospace;
+  font-size:24px;
+  letter-spacing:.5px;
+  color:var(--g);
+  background:var(--bp);
+  border:1px solid var(--gd);
+  padding:26px 34px;
+  line-height:1.55;
+  white-space:pre;
+  text-shadow:0 0 6px rgba(0,230,118,.16);
+  max-width:1700px;
+  overflow:hidden;
+}
+.cheat .ch-head{color:var(--gm)}
+.cheat .ch-sub{color:var(--gr)}
+.cheat .ch-amber{color:var(--amber)}
+.cheat .ch-red{color:var(--red)}
+.cheat .ch-w{color:var(--w)}
+.cheat .ch-arrow{color:var(--gm)}
+
+/* W5 decode rules sits a touch smaller — more lines */
+.cheat.w5{font-size:22px;line-height:1.6}
+
+/* ====================================================================
+   Reference card (W6, W8, W13, W14, W15) — standalone loop cards.
+   Monospace body block + a green/amber payoff line beneath.
+   ==================================================================== */
+.refcard{
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+  max-width:1600px;
+}
+.refcard .rc-block{
+  font-family:'Share Tech Mono',monospace;
+  font-size:22px;
+  letter-spacing:.5px;
+  color:var(--w);
+  background:var(--bp);
+  border:1px solid var(--bdr);
+  padding:24px 30px;
+  line-height:1.6;
+  white-space:pre;
+}
+.refcard .rc-block .rc-head{color:var(--gm)}
+.refcard .rc-block .rc-green{color:var(--g);text-shadow:0 0 6px rgba(0,230,118,.2)}
+.refcard .rc-block .rc-amber{color:var(--amber)}
+.refcard .rc-block .rc-red{color:var(--red)}
+.refcard .rc-block .rc-mute{color:var(--gr)}
+.refcard .rc-block .rc-arrow{color:var(--gm)}
+.refcard .rc-payoff{
+  font-family:'Share Tech Mono',monospace;
+  font-size:23px;
+  letter-spacing:1px;
+  color:var(--g);
+  text-shadow:var(--gg);
+  line-height:1.7;
+}
+.refcard .rc-payoff.amber{color:var(--amber);text-shadow:var(--ga)}
+.refcard .rc-payoff .rc-mute{color:var(--gr);text-shadow:none}
+
+/* ====================================================================
+   W7 — Station Flow — numbered procedure rows with exact commands
+   ==================================================================== */
+.w7-flow{
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  max-width:1700px;
+  border:1px solid var(--bdr);
+  background:var(--bp);
+}
+.flow-row{
+  display:grid;
+  grid-template-columns:140px 1fr;
+  align-items:start;
+  padding:18px 26px;
+  border-bottom:1px solid var(--bdr);
+  gap:18px;
+}
+.flow-row:last-child{border-bottom:none}
+.flow-row .fr-step{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:20px;
+  letter-spacing:2px;
+  color:var(--g);
+  text-shadow:var(--gg);
+  white-space:nowrap;
+}
+.flow-row .fr-step .fr-num{color:var(--gd);margin-right:12px}
+.flow-row .fr-body{font-family:'Share Tech Mono',monospace}
+.flow-row .fr-cmd{
+  display:block;
+  font-size:20px;
+  letter-spacing:.5px;
+  color:var(--g);
+  text-shadow:0 0 6px rgba(0,230,118,.18);
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+.flow-row .fr-note{
+  display:block;
+  font-size:16px;
+  letter-spacing:1px;
+  color:var(--gr);
+  margin-top:4px;
+}
+
+/* ====================================================================
+   W7 (split) — advanced CLI flow (left) + browser tool (right)
+   Two equal halves on one screen, legible from across a room.
+   ==================================================================== */
+.w7-split{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:36px;
+  align-items:start;
+  max-width:1820px;
+}
+.w7-split .w7-col{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  min-width:0;
+}
+.w7-col-head{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:24px;
+  letter-spacing:3px;
+  color:var(--g);
+  text-shadow:var(--gg);
+}
+.w7-col-head.amber{color:var(--amber);text-shadow:var(--ga)}
+.w7-col-head .w7-col-sub{
+  font-family:'Share Tech Mono',monospace;
+  font-weight:400;
+  font-size:16px;
+  letter-spacing:1px;
+  color:var(--gr);
+  text-shadow:none;
+  margin-left:10px;
+}
+/* let the flow table fill its half */
+.w7-split .w7-flow{max-width:none}
+/* slightly tighter command text so 5 rows fit a half-width column */
+.w7-split .flow-row{grid-template-columns:120px 1fr;padding:14px 22px;gap:14px}
+.w7-split .flow-row .fr-cmd{font-size:18px}
+.w7-split .flow-row .fr-note{font-size:15px}
+
+/* browser-tool screenshot, framed, with an annotated caption */
+.w7-shot{
+  margin:0;
+  border:1px solid var(--amberd);
+  background:var(--bp);
+  padding:8px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.w7-shot img{
+  display:block;
+  width:100%;
+  object-fit:contain;
+  border:1px solid var(--bdr);
+  background:#000;
+}
+.w7-shot figcaption{
+  font-family:'Share Tech Mono',monospace;
+  font-size:17px;
+  letter-spacing:.5px;
+  color:var(--w);
+  line-height:1.5;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.w7-shot .ws-line{display:block}
+.w7-shot .ws-cmd{color:var(--g);text-shadow:0 0 6px rgba(0,230,118,.18)}
+.w7-shot .ws-mode{color:var(--g)}
+.w7-shot .ws-mode.amber{color:var(--amber);text-shadow:var(--ga)}
+.w7-shot .ws-mute{color:var(--gr)}
+.w7-shot .ws-mute .ws-cmd{color:var(--gm)}
+
+/* ====================================================================
+   W9 — Recovery Write — calm reassurance + command
+   ==================================================================== */
+.w9-recovery{
+  display:flex;
+  flex-direction:column;
+  gap:30px;
+  max-width:1600px;
+  margin:auto;
+  width:100%;
+}
+.w9-recovery .rec-lead{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:40px;
+  letter-spacing:4px;
+  color:var(--g);
+  text-shadow:var(--gg);
+  line-height:1.2;
+}
+.w9-recovery .rec-cmd{
+  font-family:'Share Tech Mono',monospace;
+  font-size:21px;
+  letter-spacing:.5px;
+  color:var(--g);
+  background:var(--bp);
+  border:1px solid var(--gd);
+  padding:22px 28px;
+  line-height:1.6;
+  white-space:pre;
+  text-shadow:0 0 6px rgba(0,230,118,.18);
+}
+.w9-recovery .rec-cmd .rc-label{
+  display:block;
+  font-size:18px;
+  letter-spacing:1px;
+  color:var(--gm);
+  margin-bottom:10px;
+}
+.w9-recovery .rec-tail{
+  font-family:'Share Tech Mono',monospace;
+  font-size:22px;
+  letter-spacing:1px;
+  color:var(--w);
+  line-height:1.7;
+}
+.w9-recovery .rec-tail .rt-amber{color:var(--amber);text-shadow:var(--ga)}
+
+/* ====================================================================
+   W10 — Station Map + amber traffic banner
+   ==================================================================== */
+.w10-map{
+  display:flex;
+  flex-direction:column;
+  gap:26px;
+  max-width:1600px;
+}
+.w10-map .map-block{
+  font-family:'Share Tech Mono',monospace;
+  font-size:22px;
+  letter-spacing:.5px;
+  color:var(--w);
+  background:var(--bp);
+  border:1px solid var(--bdr);
+  padding:24px 30px;
+  line-height:1.65;
+  white-space:pre;
+}
+.w10-map .map-block .mp-id{color:var(--g);text-shadow:0 0 6px rgba(0,230,118,.2)}
+.w10-map .map-block .mp-mute{color:var(--gr)}
+/* Amber traffic banner — load-bearing signage line, large + loud */
+.traffic-banner{
+  border:3px solid var(--amber);
+  background:rgba(240,165,0,.08);
+  padding:24px 34px;
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  letter-spacing:3px;
+  color:var(--amber);
+  text-shadow:var(--ga);
+  line-height:1.35;
+}
+.traffic-banner .tb-headline{
+  display:block;
+  font-size:34px;
+}
+.traffic-banner .tb-sub{
+  display:block;
+  margin-top:14px;
+  font-family:'Share Tech Mono',monospace;
+  font-weight:400;
+  font-size:24px;
+  letter-spacing:1px;
+  color:var(--amber);
+}
+
+/* ====================================================================
+   W11 — Drill Station Safety — RED bordered safety card, unmissable
+   ==================================================================== */
+.safety-card{
+  border:4px solid var(--red);
+  background:rgba(255,51,85,.06);
+  box-shadow:var(--gr-r);
+  padding:36px 44px;
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+  max-width:1600px;
+  margin:auto;
+  width:100%;
+}
+.safety-card .sc-title{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:38px;
+  letter-spacing:4px;
+  color:var(--red);
+  text-shadow:var(--gr-r);
+  line-height:1.15;
+}
+.safety-card .sc-gear{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:30px;
+  letter-spacing:3px;
+  color:var(--w);
+  display:flex;
+  gap:36px;
+  flex-wrap:wrap;
+}
+.safety-card .sc-gear .gear-item{color:var(--g);text-shadow:var(--gg)}
+.safety-card .sc-supplies{
+  font-family:'Share Tech Mono',monospace;
+  font-size:22px;
+  letter-spacing:1px;
+  color:var(--gr);
+}
+.safety-card .sc-rule{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:34px;
+  letter-spacing:3px;
+  color:var(--red);
+  text-shadow:var(--gr-r);
+  padding-top:8px;
+  border-top:1px solid rgba(255,51,85,.3);
+}
+.safety-card .sc-watch{
+  font-family:'Share Tech Mono',monospace;
+  font-size:22px;
+  letter-spacing:1px;
+  color:var(--w);
+  line-height:1.6;
+}
+.safety-card .sc-stuck{
+  font-family:'Share Tech Mono',monospace;
+  font-size:20px;
+  letter-spacing:1px;
+  color:var(--amber);
+  text-shadow:var(--ga);
+  line-height:1.6;
+}
+
+/* ====================================================================
+   W12 — Everything Is Replicable — close / resources
+   ==================================================================== */
+.w12-close{
+  display:flex;
+  flex-direction:column;
+  gap:34px;
+  max-width:1500px;
+  margin:auto;
+  width:100%;
+}
+.w12-close .take-title{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:40px;
+  letter-spacing:5px;
+  color:var(--g);
+  text-shadow:var(--gg);
+}
+.w12-close .resources{
+  font-family:'Share Tech Mono',monospace;
+  font-size:23px;
+  letter-spacing:.5px;
+  color:var(--w);
+  background:var(--bp);
+  border:1px solid var(--bdr);
+  padding:26px 32px;
+  line-height:1.7;
+  white-space:pre;
+}
+.w12-close .resources .res-lbl{color:var(--gm)}
+.w12-close .resources .res-url{color:var(--g);text-shadow:0 0 6px rgba(0,230,118,.2)}
+.w12-close .close-rule{
+  width:100%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--gd),transparent);
+}
+.w12-close .close-lines{
+  font-family:'Share Tech Mono',monospace;
+  font-size:28px;
+  letter-spacing:1px;
+  color:var(--g);
+  text-shadow:var(--gg);
+  line-height:1.6;
+}
+
+/* ====================================================================
+   W4 — color-coded page-0 hex grid + region legend
+   Dark-deck region hues (from PAGE0-EXAMPLE-TABLE legend, dark column).
+   The colored cascading bands ARE the lesson — keep them loud.
+   ==================================================================== */
+:root{
+  /* page-0 region colors — DARK DECK variants */
+  --r-mark:#94A3B8;   /* slate   — page marker      */
+  --r-c1:#FBBF24;     /* amber   — code byte 1      */
+  --r-c2:#FB923C;     /* orange  — code byte 2      */
+  --r-c3:#FB7185;     /* rose    — code byte 3      */
+  --r-act:#5EEAD4;    /* teal    — active flag      */
+  --r-perm:#C4B5FD;   /* violet  — permission       */
+  --r-pad:#6B7280;    /* gray    — padding          */
+}
+.w4-grid-wrap{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:42px;
+  align-items:start;
+  max-width:1760px;
+}
+.hexgrid{
+  font-family:'Share Tech Mono',monospace;
+  font-size:25px;
+  line-height:1.45;
+  letter-spacing:.5px;
+  background:var(--bp);
+  border:1px solid var(--gd);
+  padding:22px 26px;
+  white-space:pre;
+  margin:0;
+}
+.hexgrid .hg-off{color:var(--gr)}
+.hexgrid .hg-asc{margin-left:.4em}
+/* region byte colors — bold so the bands cascade visibly */
+.hexgrid .b-mark,.w4-legend .b-mark{color:var(--r-mark)}
+.hexgrid .b-c1,  .w4-legend .b-c1  {color:var(--r-c1)}
+.hexgrid .b-c2,  .w4-legend .b-c2  {color:var(--r-c2)}
+.hexgrid .b-c3,  .w4-legend .b-c3  {color:var(--r-c3)}
+.hexgrid .b-act, .w4-legend .b-act {color:var(--r-act)}
+.hexgrid .b-perm,.w4-legend .b-perm{color:var(--r-perm)}
+.hexgrid .b-pad, .w4-legend .b-pad {color:var(--r-pad)}
+.hexgrid [class^="b-"],.hexgrid [class*=" b-"]{font-weight:400}
+
+.w4-legend{
+  font-family:'Share Tech Mono',monospace;
+  font-size:21px;
+  letter-spacing:.5px;
+  color:var(--w);
+  line-height:1.5;
+}
+.w4-legend .lg-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.w4-legend .lg-sw{
+  display:inline-block;
+  width:1.6em;
+  border:1px solid rgba(255,255,255,.18);
+}
+/* swatch fill = same region color, as a solid block */
+.w4-legend .lg-sw.b-mark{background:var(--r-mark)}
+.w4-legend .lg-sw.b-c1  {background:var(--r-c1)}
+.w4-legend .lg-sw.b-c2  {background:var(--r-c2)}
+.w4-legend .lg-sw.b-c3  {background:var(--r-c3)}
+.w4-legend .lg-sw.b-act {background:var(--r-act)}
+.w4-legend .lg-sw.b-perm{background:var(--r-perm)}
+.w4-legend .lg-sw.b-pad {background:var(--r-pad)}
+.w4-legend .lg-off{color:var(--gr);min-width:9.5em;display:inline-block}
+.w4-legend .lg-note{
+  margin-top:18px;padding-top:14px;
+  border-top:1px solid var(--bdr);
+  font-size:18px;color:var(--gr);line-height:1.6;
+}
+.w4-legend .lg-paper{
+  margin-top:14px;
+  font-size:18px;letter-spacing:1px;
+  color:var(--amber);text-shadow:var(--ga);
+}
+
+/* ====================================================================
+   W5 — Decode Rules — four ruled zones + isolated worked example
+   ==================================================================== */
+.w5-zones{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  max-width:1700px;
+}
+.w5-zones .zone{
+  border:1px solid var(--gd);
+  background:var(--bp);
+  padding:16px 24px;
+}
+.w5-zones .z-label{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:20px;
+  letter-spacing:3px;
+  color:var(--gm);
+  margin-bottom:10px;
+}
+.w5-zones .z-label.red{color:var(--red);text-shadow:var(--gr-r)}
+.w5-zones .z-body{
+  font-family:'Share Tech Mono',monospace;
+  font-size:23px;
+  letter-spacing:.5px;
+  color:var(--w);
+  line-height:1.55;
+  white-space:pre;
+}
+.w5-zones .z-arrow{color:var(--gm)}
+.w5-zones .z-amber{color:var(--amber)}
+.w5-zones .z-green{color:var(--g);text-shadow:0 0 6px rgba(0,230,118,.25)}
+.w5-zones .z-trap{border-color:var(--redm)}
+.w5-zones .z-trap .z-em{color:var(--red);text-shadow:var(--gr-r)}
+.w5-zones .z-pair{display:grid;grid-template-columns:1.7fr 1fr;gap:18px}
+.w5-zones .z-pair .zone{margin:0}
+.w5-zones .z-worked{border-color:var(--g)}
+
+/* W11 — recommended (soft) gear items render in the off-white,
+   keeping SAFETY GLASSES the lone green all-caps mandatory line */
+.safety-card .sc-gear .gear-soft{
+  color:var(--w);
+  text-shadow:none;
+  text-transform:none;
+  font-family:'Share Tech Mono',monospace;
+  font-weight:400;
+  font-size:24px;
+  letter-spacing:1px;
+  align-self:center;
+}
+
+/* ---------- Reveal transitions (instant cut) ---------- */
+.reveal .slides>section.future,.reveal .slides>section.past{opacity:0}
+.reveal .slides>section.present{opacity:1}
+
+/* ---------- Fallbacks ---------- */
+.reveal .slides section.has-light-background{background:transparent}
+.reveal .slide-background{background:var(--bg)}
