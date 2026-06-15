@@ -6,7 +6,7 @@
 <title>Dead Bytes Tell No Lies — ToorCamp 2026</title>
 
 <!--
-  Slide deck for "Dead Bytes Tell No Lies: Hands-On NAND Flash Decoding
+  Slide deck for "Dead Bytes Tell No Lies: Hands-On SPI Flash Decoding
   for Access Control Locks" — ToorCamp 2026, Prime Dome.
   Speaker: Qweary.
 
@@ -69,7 +69,7 @@
     <div class="anchor">HOOK</div>
     <div>
       <div class="title">DEAD BYTES<br>TELL NO LIES</div>
-      <div class="sub">Hands-On NAND Flash Decoding for Access Control Locks</div>
+      <div class="sub">Hands-On SPI Flash Decoding for Access Control Locks</div>
       <div class="venue">TOORCAMP 2026 &middot; PRIME DOME</div>
     </div>
     <div class="brand">dead-bytes.deck</div>
@@ -160,7 +160,7 @@
       <div class="followup">
         The lock I recommended was in critical infrastructure.<br>
         The company wouldn't talk to me.<br>
-        And I had a year of locksmith context and a really bad idea.
+        And I had another year of locksmith context and a really bad idea.
       </div>
       <figure class="exhibit ex-amber s5-exhibit">
         <img src="img/10-wireless-lock.jpg" alt="DL-Windows wireless-lock spec: password fixed at exactly 6 characters"
@@ -192,8 +192,8 @@
         <figure class="exhibit">
           <img src="img/08-nand-macro.jpg" alt="Macro of the Adesto AT45DB041E NAND flash chip"
                onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-          <div class="exhibit-fallback"><span class="efb-tag">NAND macro</span>Adesto AT45DB041E. every user code lives here, in plaintext.</div>
-          <figcaption><span class="ex-tag">the NAND</span>AT45DB041E · plaintext codes.</figcaption>
+          <div class="exhibit-fallback"><span class="efb-tag">SPI macro</span>Adesto AT45DB041E. every user code lives here, in plaintext.</div>
+          <figcaption><span class="ex-tag">the Flash</span>AT45DB041E · plaintext codes.</figcaption>
         </figure>
         <figure class="exhibit">
           <img src="img/09-mcu-macro.jpg" alt="Macro of the MSP430F2418 microcontroller"
@@ -205,7 +205,7 @@
       <div>
         <div class="components">
           <span class="lbl">MCU:</span> MSP430F2418<br>
-          <span class="lbl">NAND:</span> Adesto AT45DB041E<br>
+          <span class="lbl">Flash:</span> Adesto AT45DB041E<br>
           <span class="lbl">JTAG:</span> exposed &mdash; fuse never blown<br>
           <span class="lbl">USB:</span> CP2102 audit cable (DL-Windows)
         </div>
@@ -235,7 +235,7 @@
       </div>
       <div class="layer-row">
         <div class="lnum">2</div>
-        <div class="lname">NAND FLASH</div>
+        <div class="lname">SPI FLASH</div>
         <div class="ldesc">plaintext codes, stealth window</div>
       </div>
       <div class="layer-row">
@@ -305,7 +305,7 @@
 </section>
 
 <!-- ===================================================================
-     S10 — LAYER 2: NAND FLASH (chapter divider)
+     S10 — LAYER 2: SPI FLASH (chapter divider)
      LAYER 2 · 21:00–21:30
      =================================================================== -->
 <section id="s10-l2-divider" data-slide="S10">
@@ -313,14 +313,14 @@
     <div class="anchor">LAYER 2</div>
     <div class="divider-text">
       <div class="chapter-num">LAYER 2</div>
-      <div class="chapter">NAND FLASH<span class="cur blink"></span></div>
+      <div class="chapter">SPI FLASH<span class="cur blink"></span></div>
       <div class="rule">&mdash;&mdash;&mdash; Adesto AT45DB041E &mdash;&mdash;&mdash;</div>
       <div class="sub">264-byte pages &middot; 50 users &middot; plaintext codes</div>
     </div>
     <figure class="exhibit divider-hero">
       <img src="img/08-nand-macro.jpg" alt="Macro of the Adesto AT45DB041E NAND flash chip"
            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-      <div class="exhibit-fallback"><span class="efb-tag">NAND macro</span>Adesto AT45DB041E — the chip that stores every code in plaintext.</div>
+      <div class="exhibit-fallback"><span class="efb-tag">SPI macro</span>Adesto AT45DB041E — the chip that stores every code in plaintext.</div>
       <figcaption><span class="ex-tag">the chip</span>this is where the codes live.</figcaption>
     </figure>
     <div class="brand">dead-bytes.deck</div>
@@ -348,7 +348,7 @@ permission flags:  F1 = Master &nbsp; E1 = Elevated &nbsp; C1 = Supervisor</span
       <div class="nand-two-col">
         <div class="callout-amber">
           <span class="ca-label">// lazy write &middot; attack window</span>
-          <span class="ca-line">MSP430 commits RAM &rarr; NAND only on battery removal.</span>
+          <span class="ca-line">MSP430 commits RAM &rarr; Flash only on battery removal.</span>
           <span class="ca-line">read chip &middot; edit codes &middot; write &middot; reinstall.</span>
           <span class="ca-line">$30 programmer + SOP8 clip &middot; 15 min</span>
           <span class="ca-line">result: new master user in a pharmacy lock.</span>
@@ -400,7 +400,7 @@ permission flags:  F1 = Master &nbsp; E1 = Elevated &nbsp; C1 = Supervisor</span
       <div class="chapter-num">LAYER 3</div>
       <div class="chapter">FIRMWARE<span class="cur blink"></span></div>
       <div class="rule">&mdash;&mdash;&mdash; JTAG fuse: never blown &mdash;&mdash;&mdash;</div>
-      <div class="sub">$30 programmer &middot; soldering iron &middot; unreasonable stubbornness</div>
+      <div class="sub">MSP-FET debugger &middot; soldering iron &middot; unreasonable stubbornness</div>
     </div>
     <figure class="exhibit ex-red divider-hero">
       <img src="img/04-soldering-failure.jpg" alt="A soldering failure: bridged and burned test pins, a wire and test port pulled out of the board"
@@ -428,8 +428,8 @@ permission flags:  F1 = Master &nbsp; E1 = Elevated &nbsp; C1 = Supervisor</span
           <div class="jb-header">// JTAG STATUS</div>
           <span class="jb-lbl">fuse:</span> <span class="jb-val warn">NOT BLOWN</span><br>
           <span class="jb-lbl">access:</span> <span class="jb-val">full read/write</span><br>
-          <span class="jb-lbl">cost:</span> <span class="jb-val">$30 programmer</span><br>
-          <span class="jb-lbl">method:</span> <span class="jb-val">SOP8 clip &rarr; JTAG</span>
+          <span class="jb-lbl">cost:</span> <span class="jb-val">MSP-FET, ~$100ish</span><br>
+          <span class="jb-lbl">method:</span> <span class="jb-val">soldered leads &rarr; JTAG</span>
         </div>
         <div style="margin-top:20px">
           <div class="outcome-list">
@@ -479,10 +479,10 @@ permission flags:  F1 = Master &nbsp; E1 = Elevated &nbsp; C1 = Supervisor</span
           <figcaption><span class="ex-tag">ghidra · the dump</span>limited disassembly. a starting point. proof of extraction.</figcaption>
         </figure>
         <figure class="exhibit">
-          <img src="img/02-greatfet-jtag.jpg" alt="PCBite probes on the JTAG debug ports jumpered to a GreatFET One"
+          <img src="img/03-msp-fet.jpg" alt="TI MSP-FET debugger — the JTAG tool that dumped the MSP430F2418 firmware"
                onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-          <div class="exhibit-fallback"><span class="efb-tag">PCBite probes &rarr; JTAG &rarr; GreatFET</span>probes on the debug ports, jumpered to a GreatFET One, USB to the laptop. that's the access.</div>
-          <figcaption><span class="ex-tag">probes on the JTAG ports</span>GreatFET One on the debug pads. that's the access.</figcaption>
+          <div class="exhibit-fallback"><span class="efb-tag">TI MSP-FET &middot; JTAG debugger</span>~$100 of TI silicon. UniFlash to dump the MSP430F2418, Ghidra to read it. this is the firmware tool.</div>
+          <figcaption><span class="ex-tag">MSP-FET &middot; the firmware tool</span>JTAG over soldered leads. UniFlash dumps it, Ghidra reads it.</figcaption>
         </figure>
       </div>
     </div>
@@ -607,7 +607,7 @@ permission flags:  F1 = Master &nbsp; E1 = Elevated &nbsp; C1 = Supervisor</span
           <div class="cc-dot"></div>
           <div class="cc-bot"></div>
         </div>
-        <div class="chain-content"><span class="cl">NAND FLASH</span> injected user &middot; Print&ne;Export &middot; invisible to forensic pull</div>
+        <div class="chain-content"><span class="cl">SPI FLASH</span> injected user &middot; Print&ne;Export &middot; invisible to forensic pull</div>
       </div>
       <div class="chain-row">
         <div class="chain-connector">
@@ -628,7 +628,7 @@ permission flags:  F1 = Master &nbsp; E1 = Elevated &nbsp; C1 = Supervisor</span
     </div>
     <div class="chain-end" style="margin-top:14px">
       combined: credentials &middot; firmware &middot; audit trail &mdash; all manipulable.<br>
-      physical access &middot; $30 programmer &middot; soldering iron &middot; GreatFET.<br>
+      physical access &middot; a $30 flash reader &middot; a $100 debugger &middot; a $30 USB board.<br>
       the log submitted to court shows nothing.
       <span class="supply-note">this lock crosses borders before installation.</span>
     </div>
@@ -786,7 +786,7 @@ permission flags:  F1 = Master &nbsp; E1 = Elevated &nbsp; C1 = Supervisor</span
           <div class="ft-result">Layer 3 &mdash; <span class="killed">firmware (dead)</span></div>
         </div>
         <div class="ft-row">
-          <div class="ft-mit"><span class="ft-action">encrypt the NAND</span></div>
+          <div class="ft-mit"><span class="ft-action">encrypt the Flash</span></div>
           <div class="ft-result">Layer 2 &mdash; <span class="killed">ciphertext, not plaintext credentials</span></div>
         </div>
         <div class="ft-row">
@@ -873,7 +873,7 @@ permission flags:  F1 = Master &nbsp; E1 = Elevated &nbsp; C1 = Supervisor</span
     <div class="anchor">BACK-POCKET &middot; nand demo wedged</div>
     <div class="bp-nand">
       <div class="bp-col">
-        <div class="bpc-header">// NAND FLASH &mdash; what the live demo would have shown</div>
+        <div class="bpc-header">// SPI FLASH &mdash; what the live demo would have shown</div>
         <span class="bpc-line">SOP8 clip on AT45DB041E</span>
         <span class="bpc-line">dump: 264-byte pages, plaintext ASCII codes</span>
         <span class="bpc-line">"0" stored as "B" &mdash; MCU representation artifact</span>
@@ -885,6 +885,7 @@ permission flags:  F1 = Master &nbsp; E1 = Elevated &nbsp; C1 = Supervisor</span
       <div class="bp-col">
         <div class="bpc-header">// FIRMWARE &mdash; what the video would have shown</div>
         <span class="bpc-line">JTAG fuse: not blown. Full read/write access.</span>
+        <span class="bpc-line">MSP-FET over soldered JTAG leads &middot; UniFlash dump &middot; Ghidra</span>
         <span class="bpc-line">SetMasterCode() at 0x9ECA</span>
         <span class="bpc-line">hijack at 0x9EE8: BR #0xFA20</span>
         <span class="bpc-line">38-byte payload at 0xFA20</span>
