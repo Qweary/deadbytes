@@ -19,7 +19,7 @@ Every file shipped in `facilitator-kit-toorcamp-2026.tar.gz`. `selftest.sh` re-M
 | `bin/minipro-env.sh` | 2325 | `b3725058676ceda8844a13e9f27d9951` | env | sourced snippet that sets MINIPRO_HOME to the kit's bundled share/minipro device DB (absolute, path-relative to this snippet); sourced by bin/start.sh and by the documented raw-minipro live command |
 | `bin/start.sh` | 10575 | `06201f578ac3b5545fd1a569d23b859d` | launcher | browser one-command entry point (cwd-robust; resolves its root from BASH_SOURCE); the attendee's ./bin/start.sh — same file the cloned repo ships, bundled so the extracted/installed layouts have it too |
 | `docs/DATAFLASH-DECODE-REFERENCE.md` | 20579 | `83dfd89650e7d02b73cf68dfd9e2fc6b` | doc | AT45DB041E dump format reference (page-0 layout, BCD-B encoding) |
-| `docs/FACILITATOR-GUIDE.md` | 47887 | `7dbc0451392ac3cc8be7880c2e587fc2` | doc | facilitator-facing workshop runbook (47KB) |
+| `docs/FACILITATOR-GUIDE.md` | 50861 | `2467b20feb09f462a48986128b658aac` | doc | facilitator-facing workshop runbook (47KB) |
 | `docs/PARTICIPANT-HANDOUT.md` | 9059 | `04f0ed5e52c7657d2b16e85c97e45d9d` | doc | attendee-facing 1-page workshop handout |
 | `dumps/intact-lock-AT45DB041E-main-2026-05-20.bin` | 540672 | `eb6acff32ef13b29ac6ebed10d77316d` | dump | canonical intact-lock baseline (540,672 bytes, sensitive, workshop-internal) |
 | `dumps/workshop-sample-3codes-AT45DB041E-2026-05-20.bin` | 540672 | `741dcc79d9975b956d9e1c0a14de0e2b` | dump | teaching sample (540,672 bytes, sensitive, workshop-internal): canonical baseline + the 3 default workshop codes injected additively at slots 19/32/49; default READ source for the tools |
@@ -32,9 +32,9 @@ Every file shipped in `facilitator-kit-toorcamp-2026.tar.gz`. `selftest.sh` re-M
 | `share/minipro/logicic.xml` | 187372 | `54e0c050e5f2e0e9b7d2179de5ec7be8` | device-db | minipro logic-IC profile database; version-pinned to bin/minipro commit fd6b56af — re-bundle from the SAME commit on any binary rebuild (drift rule); found at runtime via MINIPRO_HOME (bin/minipro-env.sh) |
 | `tools/build-injected.py` | 8683 | `7b93fe3986fbbf05ff5f7104c821b342` | tool | builds injected.bin from baseline + canonical 3-slot patch |
 | `tools/decode-codes.py` | 23035 | `4dbe45962048609515c65c37c501ca20` | tool | reads + decodes the page-0 user-code table (the READ action; renders empty slots) |
-| `tools/lock-menu.py` | 5898 | `a73a4d107d7826852d5b6d61bd9add34` | tool | plain-text menu front-end wrapping lock-tool.py (thin convenience layer) |
-| `tools/lock-panel.py` | 32943 | `5dbe5514210af8565b75b45342c032a0` | tool | localhost browser control panel: READ button + custom-value field + WRITE button |
-| `tools/lock-tool.py` | 29368 | `3f318c2ac878214facc1ac2d3066187e` | tool | unified read/write CLI; bakes a custom code into a copy + re-decodes (W2/W3 bedrock) |
+| `tools/lock-menu.py` | 6554 | `85690c4c84906e75b38d395583321a22` | tool | plain-text menu front-end wrapping lock-tool.py (thin convenience layer) |
+| `tools/lock-panel.py` | 39469 | `6b4e925b961bb9cba5312e402b45de57` | tool | localhost browser control panel: READ button + custom-value field + WRITE button |
+| `tools/lock-tool.py` | 44820 | `e88f75e8c38eef7ac19e22097962041f` | tool | unified read/write CLI; bakes a custom code into a copy + re-decodes (W2/W3 bedrock) |
 | `tools/recover-baseline.py` | 29808 | `fed4aab19a3b32bc197d2c8ea204375d` | tool | defensive wrapper around minipro -w; recovers a botched write |
 
 ## Sensitive content

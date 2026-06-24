@@ -21,10 +21,22 @@
 >   touches a real lock. The CLI equivalent (`write` without `--live`) prints a
 >   loud **PREVIEW ONLY — nothing was written to the lock** banner.
 > - **Live lock** (red "writes the REAL chip" banner) — *READ the real lock* runs
->   a real `minipro` read; *FLASH the real lock…* opens an in-browser confirmation
->   page stating exactly what lands on the chip, then needs a second deliberate
->   *Yes, flash the real lock* before anything is written. The CLI equivalent is
->   the `--live` flag.
+>   a real `minipro` read. There are **two** live writes, each opening an
+>   in-browser confirmation page that needs a second deliberate click:
+>   - ***ADD my code to the lock…*** (the standard button) — **accumulate**: the
+>     tool reads the real chip first and **adds** the attendee's code on top,
+>     **preserving every code already on the lock**. This is the default and what
+>     an attendee expects. CLI equivalent: `--live`.
+>   - ***RESET + add my code…*** (the explicit reset button) — wipes the chip and
+>     re-seeds it to the sample state (the 3 demo codes + `123456`) with the
+>     attendee's code injected. The old deterministic sample-flash behaviour, now
+>     opt-in. CLI equivalent: `--live --reset-baseline`.
+>   On the **ADD** path, if the chosen slot already holds a *different* live code,
+>   the flash step shows whose code it is and asks for one more explicit
+>   confirmation before overwriting it (an empty slot or a re-write of the same
+>   code does not prompt). The accumulate read **fails loud**: a missing
+>   programmer or a clip that doesn't bite aborts the write with an error and
+>   touches nothing — it never silently falls back to wiping the lock.
 >
 > This guide is for the organizer who *is* staffing a session: standing up the
 > station laptops, the hardware counts, the software verification checklist, the
@@ -136,7 +148,9 @@ The three default codes baked into the teaching sample:
 | 32 | `420420` | `0x42 0xB4 0x2B` | Elevated | `0xE1` |
 | 49 | `696969` | `0x69 0x69 0x69` | Supervisor | `0xC1` |
 
-Slot 32 (`420420`) carries the `0xB`-for-zero demonstration — its two zero digits encode as nibble `0xB` (`0x42 0xB4 0x2B`). A custom `write` is additive: it stacks on top of these three and preserves every other slot; writing into an already-occupied slot (19/32/49) prints an OVERWRITE warning before proceeding, while writing into an empty slot just adds.
+Slot 32 (`420420`) carries the `0xB`-for-zero demonstration — its two zero digits encode as nibble `0xB` (`0x42 0xB4 0x2B`).
+
+A custom `write` is **additive, and now literally so against the chip on the default live path**: the standard `--live` write (the panel's *ADD my code to the lock…* button) reads the real chip first and writes that read back with the attendee's code added, so it stacks on top of whatever is actually on the lock and preserves every other slot. (The no-hardware **Practice/preview** write is additive against a *copy of this teaching sample* — same behaviour, no chip touched.) Writing into an already-occupied slot prints an OVERWRITE warning before proceeding; on the live ADD path, if that occupied slot holds a *different* code, the tool requires an extra explicit confirmation before evicting it. Writing into an empty slot just adds, no prompt. The explicit `--live --reset-baseline` write (the panel's *RESET + add my code…* button) is the exception — it does **not** accumulate; it wipes the chip and re-seeds it to this sample state (3 demo codes + `123456`) plus the attendee's code.
 
 ### Workshop-Distribution Dump Production
 
@@ -271,6 +285,8 @@ This is where the workshop lives. Each programmer station runs the same flow on 
 #### The per-attendee flow at a programmer station (25 min)
 
 This is the **live-hardware** path, for an attendee who wants to do it on a real lock. Read the whole section before the workshop so you can support it. Attendees who just want the lesson run the no-hardware Practice path (`./bin/start.sh`) with no hardware and no help. The steps below describe the manual `minipro` flow on real hardware so you understand what is happening under the hood; in practice the self-service tools wrap the same operations — the panel's **Live lock** tab, or the CLI `--live` flag (`lock-tool.py read --all --live`, `lock-tool.py write ... --live`), with `recover-baseline.py` as the recovery write. That is the path to walk an attendee through. Every live `minipro` call is `sudo`-free — the bundled `61-minipro-uaccess.rules` grants the logged-in user direct access to the T48.
+
+Note that the wrapped `lock-tool.py write ... --live` (and the panel's *ADD* button) **accumulate by design** — they read the chip first and add the attendee's code to the codes already on the lock, exactly mirroring the manual flow below where `build-injected.py` builds from the attendee's own fresh `my-dump.bin`. The manual Step 6 below writes `injected.bin` (built from `my-dump.bin`) straight to the chip, so the manual flow is itself an accumulate. The wrapped tool's `--reset-baseline` / *RESET* button is the only path that re-seeds from the bundled sample instead of from the chip.
 
 **Step 1 — Confirm the lock works as it ships (2 min)**
 
@@ -445,7 +461,7 @@ Recovery is the safety net. The lock cannot be bricked by this attack — only b
 
 As one attendee finishes Step 7 (or Step 8), whoever is supporting that station (or the attendee themselves, on an unstaffed station):
 
-1. Recovers the chip to baseline (Step 9) so the next attendee starts from a clean state. The recovery write takes ~20 seconds; do it while the finishing attendee is talking to their friend or grabbing water
+1. **Recovers the chip to baseline (Step 9) — this is now LOAD-BEARING, not optional housekeeping.** The standard live write *accumulates*: each attendee's code is added on top of whatever is already on the lock. Without a baseline recovery between attendees, codes pile up across the day and slots collide, so the next attendee no longer starts from the clean, deterministic state the flow assumes. Running `recover-baseline.py` between attendees is what restores per-attendee determinism. The recovery write takes ~20 seconds; do it while the finishing attendee is talking to their friend or grabbing water. (A facilitator who wants a one-shot reset *and* the attendee's code on the chip in a single step can instead use the panel's *RESET + add my code…* button / `--live --reset-baseline` — that wipe-and-reseed lands the sample state plus the attendee code without a separate recovery write.)
 2. Unclips the SOIC-8 from the chip, lays the clip on the bench
 3. Wipes the per-attendee `my-dump.bin`, `injected.bin`, `post-write.bin` working files from the clone
 4. Signals that a programmer slot is open so a waiting attendee can rotate in

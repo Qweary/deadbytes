@@ -92,8 +92,12 @@ def do_write(live=False):
     except (TypeError, ValueError):
         print(f"  Cancelled — slot {slot!r} is not a number.")
         return
+    # reset_baseline=False: the menu's real-chip write ACCUMULATES (reads the
+    # chip first, adds this code, keeps existing codes). The wipe-and-reseed reset
+    # path is the panel's explicit RESET button / the CLI's --reset-baseline; the
+    # menu deliberately exposes only the safe additive write.
     args = _ns(code=code, slot=slot_i, role=role, out=None,
-               baseline_dump=None, live=live, yes=False)
+               baseline_dump=None, live=live, yes=False, reset_baseline=False)
     try:
         lock_tool.cmd_write(args)
     except SystemExit as e:
@@ -115,8 +119,11 @@ def show_commands():
     print("  READ  (advanced, real chip):")
     print("    python3 lock-tool.py read --live")
     print()
-    print("  WRITE (advanced, real chip):")
+    print("  WRITE (advanced, real chip — ADDS your code, keeps existing ones):")
     print("    python3 lock-tool.py write --code 246810 --slot 25 --role master --live")
+    print()
+    print("  WRITE (advanced, real chip — RESET the lock to the sample first):")
+    print("    python3 lock-tool.py write --code 246810 --slot 25 --role master --live --reset-baseline")
     print()
 
 
@@ -127,7 +134,8 @@ MENU = """
   1. READ  the lock codes (sample dump, no hardware)
   2. WRITE your own custom code (into a copy, no hardware)
   3. READ  the REAL chip      (advanced, needs T48 + clip)
-  4. WRITE to the REAL chip   (advanced, confirmation-gated)
+  4. WRITE to the REAL chip   (advanced, confirmation-gated; ADDS your code,
+                               reads + keeps the lock's existing codes)
   5. Show the equivalent one-line commands
   q. Quit
 ==========================================================================

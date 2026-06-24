@@ -11,9 +11,13 @@ the real lock:
     into a COPY and re-decodes it (a PREVIEW — nothing is written to the lock).
 
   * LIVE LOCK (amber/red warning, the REAL chip) — a READ that runs the real
-    minipro read, and a WRITE that, after an explicit in-browser confirmation,
-    flashes the real AT45DB041E with the attendee's code + the 3 demo codes + the
-    123456 starter.
+    minipro read, and TWO writes, each after an explicit in-browser confirmation:
+      - ADD my code (the STANDARD button) — reads the real chip first and ADDS the
+        attendee's code on top, preserving every code already on the lock.
+      - RESET + add my code (the explicit reset button) — wipes the chip and
+        re-seeds it to the sample state (3 demo codes + 123456) with the
+        attendee's code injected. The old deterministic sample-flash behaviour,
+        now opt-in.
 
 It binds to localhost only and serves a single self-contained page — no external
 assets, no internet, no pip. Pure stdlib http.server.
@@ -29,7 +33,8 @@ this docstring:
     PRACTICE READ  : python3 lock-tool.py read --all
     PRACTICE WRITE : python3 lock-tool.py write --code 246810 --slot 25 --role supervisor
     LIVE READ      : python3 lock-tool.py read --all --live
-    LIVE WRITE     : python3 lock-tool.py write --code 246810 --slot 25 --role supervisor --live
+    LIVE WRITE ADD : python3 lock-tool.py write --code 246810 --slot 25 --role supervisor --live
+    LIVE WRITE RST : python3 lock-tool.py write --code 246810 --slot 25 --role supervisor --live --reset-baseline
 
 The LIVE LOCK write is gated TWICE: a deliberate two-click in-browser
 confirmation here (which states exactly what lands on the lock), and the
@@ -136,7 +141,7 @@ def run_write(code: str, slot: str, role: str) -> str:
     if err is not None:
         return f"[write error] {err}\n"
     args = _ns(code=code, slot=slot_i, role=role, out=None,
-               baseline_dump=None, live=False, yes=False)
+               baseline_dump=None, live=False, yes=False, reset_baseline=False)
     try:
         with redirect_stdout(buf):
             lock_tool.cmd_write(args)
@@ -164,12 +169,17 @@ def run_live_read() -> str:
     return out or "[live read produced no output]\n"
 
 
-def run_live_write(code: str, slot: str, role: str) -> str:
-    """LIVE WRITE — flash the REAL chip with the attendee's code + the demo codes
-    + the starter. The browser confirmation gate has already fired by the time we
-    get here; the lock-tool confirmation is pre-granted (yes=True) so there is no
-    input() deadlock. Catches SystemExit (missing-minipro / write failure) and
-    surfaces it as panel text rather than crashing the server."""
+def run_live_write(code: str, slot: str, role: str, reset: bool = False) -> str:
+    """LIVE WRITE — flash the REAL chip. Two flavours, picked by `reset`:
+      * reset=False (STANDARD) — ACCUMULATE: read the chip first and ADD the
+        attendee's code, preserving every existing code.
+      * reset=True  (explicit) — wipe-and-reseed to the sample state (3 demo codes
+        + 123456) with the attendee's code injected.
+    The browser confirmation gate has already fired by the time we get here; the
+    lock-tool confirmation is pre-granted (yes=True) so there is no input()
+    deadlock — and yes=True also pre-grants the accumulate path's overwrite gate.
+    Catches SystemExit (missing-minipro / bad-read / write failure) and surfaces
+    it as panel text rather than crashing the server."""
     buf = io.StringIO()
     code = (code or "").strip()
     role = (role or "normal").strip()
@@ -178,7 +188,8 @@ def run_live_write(code: str, slot: str, role: str) -> str:
         return f"[flash error] {err}\n"
     try:
         with redirect_stdout(buf):
-            lock_tool.flash_attendee_live(code=code, slot=slot_i, role=role)
+            lock_tool.flash_attendee_live(code=code, slot=slot_i, role=role,
+                                          reset_baseline=reset)
     except SystemExit as e:
         if e.code not in (0, None):
             buf.write(f"\n{e}\n")
@@ -238,6 +249,10 @@ _PAGE_CSS = """
   .write-btn { background: var(--practice); color: #fff; }
   .live-read-btn { background: var(--live-amber); color: #fff; }
   .flash-btn { background: var(--live); color: #fff; }
+  /* RESET is the more destructive of the two live writes (it wipes the lock
+     first), so it reads as a hollow/outlined danger button — present, but visibly
+     secondary to the solid ADD button. */
+  .reset-btn { background: #fff; color: var(--live); border: 2px solid var(--live); }
   .cancel-btn { background: #8883; color: inherit; }
   pre.out { background: #0b1020; color: #d7e0ff; padding: 1rem; border-radius: 8px;
             overflow-x: auto; white-space: pre; font-size: 0.85rem; }
@@ -308,9 +323,12 @@ def _footer() -> str:
         '<br>'
         'LIVE READ (real chip)&nbsp;: '
         '<code>python3 lock-tool.py read --all --live</code><br>'
-        'LIVE WRITE (real chip, confirmation-gated): '
+        'LIVE WRITE — ADD (real chip, keeps existing codes, confirmation-gated): '
         '<code>python3 lock-tool.py write --code 246810 --slot 25 --role supervisor '
-        '--live</code></p>'
+        '--live</code><br>'
+        'LIVE WRITE — RESET (real chip, wipe + reseed to sample): '
+        '<code>python3 lock-tool.py write --code 246810 --slot 25 --role supervisor '
+        '--live --reset-baseline</code></p>'
     )
 
 
@@ -370,9 +388,15 @@ def _practice_body(output_text: str, code_val: str, slot_val: str,
 def _live_body(output_text: str, code_val: str, slot_val: str,
                role_val: str) -> str:
     placeholder = ("LIVE LOCK mode. Press READ the real lock to read the actual "
-                   "chip, or enter a code and press FLASH the real lock to write "
-                   "it — flashing asks you to confirm first. If no programmer is "
-                   "attached, this reports it and you can switch to Practice.")
+                   "chip, or enter a code and press ADD my code to the lock to "
+                   "write it — flashing asks you to confirm first. ADD keeps every "
+                   "code already on the lock; RESET wipes the lock back to the "
+                   "sample state first. If no programmer is attached, this reports "
+                   "it and you can switch to Practice.")
+    # ONE shared input form with TWO submit buttons. Both POST to /flash-confirm;
+    # the button's own formaction carries the ?reset= flag, so the confirmation
+    # page (and ultimately flash_attendee_live) knows which path the attendee
+    # picked. ADD is the standard/default action; RESET is the explicit opt-in.
     return f"""
   <div class="card live-card">
     <h2 style="font-size:1.1rem;margin-top:0">READ the real lock</h2>
@@ -384,7 +408,7 @@ def _live_body(output_text: str, code_val: str, slot_val: str,
   </div>
 
   <div class="card live-card">
-    <h2 style="font-size:1.1rem;margin-top:0">FLASH the real lock</h2>
+    <h2 style="font-size:1.1rem;margin-top:0">Write your code to the real lock</h2>
     <p class="note danger" style="color:#b91c1c;font-weight:700">
        This erases and reprograms the REAL chip. You will be asked to confirm
        before anything is written.</p>
@@ -403,7 +427,18 @@ def _live_body(output_text: str, code_val: str, slot_val: str,
           <select id="lrole" name="role">{_role_select(role_val)}</select>
         </div>
       </div>
-      <button class="flash-btn" type="submit">FLASH the real lock…</button>
+      <div class="row">
+        <button class="flash-btn" type="submit"
+                formaction="/flash-confirm?mode=live&amp;reset=0">
+          ADD my code to the lock…</button>
+        <button class="reset-btn" type="submit"
+                formaction="/flash-confirm?mode=live&amp;reset=1">
+          RESET + add my code…</button>
+      </div>
+      <p class="note"><strong>ADD</strong> reads the lock first and keeps every
+         code already on it (the standard choice). <strong>RESET</strong> wipes
+         the lock back to the sample state (3 demo codes + 123456) before adding
+         your code — use it only to return a station to a known state.</p>
     </form>
   </div>
 
@@ -441,18 +476,22 @@ def render_page(output_text: str = "", code_val: str = "",
 </html>"""
 
 
-def render_flash_confirm(code: str, slot: str, role: str) -> str:
-    """Render the LIVE-WRITE confirmation page. This is the in-browser gate: it
-    states exactly what lands on the lock (attendee code + 3 demo codes + starter)
-    and requires a second deliberate click before /flash actually fires. All form
-    values are HTML-escaped."""
+def render_flash_confirm(code: str, slot: str, role: str,
+                         reset: bool = False) -> str:
+    """Render the LIVE-WRITE confirmation page — the in-browser gate. It states
+    exactly what lands on the lock and requires a second deliberate click before
+    /flash fires. The copy is mode-aware:
+      * reset=False (ADD/accumulate) — the lock's current codes are read first and
+        KEPT; the attendee's code is added on top. We cannot enumerate the kept
+        codes here (we have not read the chip yet), so we say so honestly.
+      * reset=True  (RESET) — the deterministic sample-flash state lands, so we
+        show lands_on_lock_summary() (attendee code + 3 demo codes + starter).
+    All form values are HTML-escaped."""
     code = (code or "").strip()
     role = (role or "normal").strip()
     slot_i, err = _parse_slot(slot)
     role_disp = _role_display(role)
     slot_for_summary = slot_i if err is None else slot
-    summary = lock_tool.lands_on_lock_summary(code or "??????", slot_for_summary,
-                                              role_disp)
     bad_code = not (code.isdigit() and len(code) == 6)
     warn = ""
     if bad_code:
@@ -463,6 +502,43 @@ def render_flash_confirm(code: str, slot: str, role: str) -> str:
     if err is not None:
         warn += ('<p class="danger">Heads up: ' + html.escape(err)
                  + ' Go back and fix the slot before flashing.</p>')
+
+    code_disp = html.escape(code or "??????")
+    slot_disp = html.escape(str(slot_for_summary))
+    role_html = html.escape(role_disp)
+    if reset:
+        # RESET: the fixed sample-flash state. Enumerable up front.
+        summary = lock_tool.lands_on_lock_summary(code or "??????",
+                                                  slot_for_summary, role_disp)
+        lead = ('This will <span class="danger">erase and reprogram the real '
+                'AT45DB041E chip</span> back to the sample state — any codes '
+                'currently on the lock are <span class="danger">wiped</span> and '
+                'replaced by:')
+        lands_block = f'<p class="lands">{html.escape(summary)}</p>'
+        detail = (
+            f'<li>Your code <code>{code_disp}</code> goes into slot '
+            f'<code>{slot_disp}</code> as <code>{role_html}</code>.</li>'
+            f'<li>The <strong>3 demo codes (133769, 420420, 696969)</strong> and '
+            f'the <strong>123456 starter</strong> are flashed alongside it.</li>'
+        )
+    else:
+        # ADD / accumulate: keep whatever is on the lock, add this code. We have
+        # not read the chip yet, so we describe the effect, not a fixed list.
+        lead = ('This will <span class="danger">add your code to the real '
+                'AT45DB041E chip</span>. The lock is read first, so every code '
+                'already on it is <strong>kept</strong>:')
+        lands_block = (
+            f'<p class="lands">Adds your code {code_disp} (slot {slot_disp}, '
+            f'{role_html}) to the lock — existing codes preserved.</p>')
+        detail = (
+            f'<li>Your code <code>{code_disp}</code> is added at slot '
+            f'<code>{slot_disp}</code> as <code>{role_html}</code>.</li>'
+            f'<li>Every code already on the lock is <strong>preserved</strong> '
+            f'(this reads the chip and writes it back with your code added).</li>'
+            f'<li>If slot <code>{slot_disp}</code> already holds a DIFFERENT code, '
+            f'the flash step shows you whose code it is before overwriting it.</li>'
+        )
+    reset_q = "1" if reset else "0"
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -477,25 +553,22 @@ def render_flash_confirm(code: str, slot: str, role: str) -> str:
   {_mode_banner("live")}
 
   <div class="confirm">
-    <h2>Confirm: flash the REAL lock?</h2>
-    <p>This will <span class="danger">erase and reprogram the real AT45DB041E
-       chip</span>. The whole sample-flash state is written — not just your code:</p>
-    <p class="lands">{html.escape(summary)}</p>
+    <h2>Confirm: {"RESET and flash" if reset else "add your code to"} the REAL lock?</h2>
+    <p>{lead}</p>
+    {lands_block}
     <ul>
-      <li>Your code <code>{html.escape(code or "??????")}</code> goes into slot
-          <code>{html.escape(str(slot_for_summary))}</code> as
-          <code>{html.escape(role_disp)}</code>.</li>
-      <li>The <strong>3 demo codes (133769, 420420, 696969)</strong> and the
-          <strong>123456 starter</strong> are flashed alongside it.</li>
+      {detail}
     </ul>
     <p class="danger">Before you click: make sure the programmer clip is seated on
        the chip and the lock's batteries are OUT.</p>
     {warn}
-    <form method="POST" action="/flash?mode=live" style="display:inline">
+    <form method="POST" action="/flash?mode=live&amp;reset={reset_q}" style="display:inline">
       <input type="hidden" name="code" value="{html.escape(code)}">
       <input type="hidden" name="slot" value="{html.escape(str(slot))}">
       <input type="hidden" name="role" value="{html.escape(role)}">
-      <button class="flash-btn" type="submit">Yes, flash the real lock</button>
+      <button class="{"reset-btn" if reset else "flash-btn"}" type="submit">{
+        "Yes, RESET and flash the real lock" if reset
+        else "Yes, add my code to the real lock"}</button>
     </form>
     <form method="POST" action="/read?mode=live" style="display:inline">
       <button class="cancel-btn" type="submit">Cancel — back to Live mode</button>
@@ -523,14 +596,17 @@ class PanelHandler(BaseHTTPRequestHandler):
 
     @staticmethod
     def _route(path: str):
-        """Split a request path into (route, mode). mode comes from ?mode=live."""
+        """Split a request path into (route, mode, reset). mode comes from
+        ?mode=live; reset (the explicit wipe-and-reseed live write) comes from
+        ?reset=1 — False for everything else."""
         parsed = urllib.parse.urlsplit(path)
         qs = urllib.parse.parse_qs(parsed.query)
         mode = "live" if qs.get("mode", ["practice"])[0] == "live" else "practice"
-        return parsed.path, mode
+        reset = qs.get("reset", ["0"])[0] == "1"
+        return parsed.path, mode, reset
 
     def do_GET(self):
-        route, mode = self._route(self.path)
+        route, mode, _reset = self._route(self.path)
         if route in ("/", "/index.html"):
             self._send_html(render_page(mode=mode))
         elif route == "/healthz":
@@ -545,7 +621,7 @@ class PanelHandler(BaseHTTPRequestHandler):
                 render_page("[404] unknown path: " + route, mode=mode), 404)
 
     def do_POST(self):
-        route, mode = self._route(self.path)
+        route, mode, reset = self._route(self.path)
         length = int(self.headers.get("Content-Length", 0) or 0)
         raw = self.rfile.read(length).decode("utf-8") if length else ""
         form = urllib.parse.parse_qs(raw)
@@ -569,18 +645,20 @@ class PanelHandler(BaseHTTPRequestHandler):
             self._send_html(render_page(out, code_val=code, slot_val=slot,
                                         role_val=role, mode="practice"))
         elif route == "/flash-confirm":
-            # Step 1 of the LIVE write gate: show the confirmation page.
+            # Step 1 of the LIVE write gate: show the confirmation page. `reset`
+            # (from ?reset=1) selects ADD-vs-RESET copy and carries through.
             code = get("code")
             slot = get("slot", "25")
             role = get("role", "normal")
-            self._send_html(render_flash_confirm(code, slot, role))
+            self._send_html(render_flash_confirm(code, slot, role, reset=reset))
         elif route == "/flash":
             # Step 2 of the LIVE write gate: the deliberate second click. Only
-            # here does the real flash actually fire.
+            # here does the real flash actually fire. `reset` picks the path:
+            # False = ACCUMULATE (read-and-add), True = wipe-and-reseed-from-sample.
             code = get("code")
             slot = get("slot", "25")
             role = get("role", "normal")
-            out = run_live_write(code, slot, role)
+            out = run_live_write(code, slot, role, reset=reset)
             self._send_html(render_page(out, code_val=code, slot_val=slot,
                                         role_val=role, mode="live"))
         else:
@@ -627,30 +705,54 @@ def run_self_test() -> int:
     live_page = render_page(mode="live")
     check("live page renders READ-the-real-lock button",
           "READ the real lock" in live_page)
-    check("live page renders FLASH-the-real-lock button",
-          "FLASH the real lock" in live_page)
+    check("live page renders the ADD (accumulate) live-write button",
+          "ADD my code to the lock" in live_page)
+    check("live page renders the explicit RESET live-write button",
+          "RESET + add my code" in live_page)
+    check("live page ADD button posts reset=0; RESET button posts reset=1",
+          "reset=0" in live_page and "reset=1" in live_page)
     check("live mode banner warns it writes the real chip",
           "LIVE LOCK — writes the REAL chip." in live_page)
 
-    # --- Live-write confirmation step renders + reflects the demo codes -----
-    confirm = render_flash_confirm("246810", "25", "supervisor")
-    check("live-write confirmation step renders",
-          "Confirm: flash the REAL lock?" in confirm
-          and "Yes, flash the real lock" in confirm)
-    check("confirmation shows the lands-on-lock summary",
-          "Lands on the lock:" in confirm and "246810" in confirm)
-    check("confirmation reflects the 3 demo codes are pushed too",
-          "133769" in confirm and "420420" in confirm and "696969" in confirm)
-    check("confirmation reflects the 123456 starter is pushed too",
-          "123456" in confirm)
-    check("confirmation warns clip seated / batteries out",
-          "clip is seated" in confirm and "batteries are OUT" in confirm)
+    # --- ADD (accumulate) confirmation: keeps existing codes, no fixed list -
+    add_confirm = render_flash_confirm("246810", "25", "supervisor", reset=False)
+    check("ADD confirmation renders + asks to add the code",
+          "add your code to the REAL lock?" in add_confirm
+          and "Yes, add my code to the real lock" in add_confirm)
+    check("ADD confirmation states existing codes are preserved",
+          "preserved" in add_confirm and "246810" in add_confirm)
+    check("ADD confirmation does NOT promise the fixed sample-flash demo set",
+          not ("133769" in add_confirm and "420420" in add_confirm
+               and "696969" in add_confirm))
+    check("ADD confirmation posts to the accumulate flash (reset=0)",
+          "/flash?mode=live&amp;reset=0" in add_confirm)
 
-    # --- Footer reflects BOTH the practice and the --live one-liners --------
+    # --- RESET confirmation: the deterministic sample-flash state -----------
+    reset_confirm = render_flash_confirm("246810", "25", "supervisor", reset=True)
+    check("RESET confirmation renders + asks to reset",
+          "RESET and flash the REAL lock?" in reset_confirm
+          and "Yes, RESET and flash the real lock" in reset_confirm)
+    check("RESET confirmation shows the lands-on-lock summary",
+          "Lands on the lock:" in reset_confirm and "246810" in reset_confirm)
+    check("RESET confirmation reflects the 3 demo codes are pushed too",
+          "133769" in reset_confirm and "420420" in reset_confirm
+          and "696969" in reset_confirm)
+    check("RESET confirmation reflects the 123456 starter is pushed too",
+          "123456" in reset_confirm)
+    check("RESET confirmation posts to the reset flash (reset=1)",
+          "/flash?mode=live&amp;reset=1" in reset_confirm)
+    check("both confirmations warn clip seated / batteries out",
+          "clip is seated" in add_confirm and "batteries are OUT" in add_confirm
+          and "clip is seated" in reset_confirm
+          and "batteries are OUT" in reset_confirm)
+
+    # --- Footer reflects the practice + BOTH live one-liners ----------------
     check("footer shows the practice (preview) one-liner",
           "PRACTICE WRITE (preview)" in page)
-    check("footer shows the live --live one-liner",
-          "--live" in page and "LIVE WRITE (real chip" in page)
+    check("footer shows the live ADD one-liner",
+          "LIVE WRITE — ADD" in page and "--live" in page)
+    check("footer shows the live RESET --reset-baseline one-liner",
+          "LIVE WRITE — RESET" in page and "--reset-baseline" in page)
 
     # --- PRACTICE wrapper logic (in-process, no hardware) -------------------
     read_out = run_read()
